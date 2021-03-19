@@ -35,7 +35,7 @@ class CenterNetHourGlass(TFHubModel):
     def _calculate_label(self, output, obj_id, *args, **kwargs):
         # No devuelve la palabra en la propia salida, utiliza el diccionario de palabras de COCO.
         output_class_id = int(output['detection_classes'][obj_id])
-        return self.classes[output_class_id]
+        return self.classes[max(0, output_class_id-1)]
 
 
 class CenterNetHourGlass104512x512(CenterNetHourGlass):
