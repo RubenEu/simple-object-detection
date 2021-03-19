@@ -11,7 +11,7 @@ class DetectionModel(ABC):
     # Carpeta temporal donde se almacenan los archivos descargados.
     temporal_folder = tempfile.mkdtemp()
 
-    def __init__(self, offline_mode=False):
+    def __init__(self, use_local=False):
         """
         Clase abstracta para implementarla en los modelos de redes neuronales.
         
@@ -19,6 +19,11 @@ class DetectionModel(ABC):
         Además en la clase de cada red se indicaré la carpeta o archivos necesarios para su correcto funcionamiento.
 
         Para una correcta implementación se necesitan sobreescribir los siguientes métodos:
+
+        - _load_local(self): carga el modelo desde la carpeta de modelos local.
+
+        - _load_online(self): carga el modelo descargándolo previamente.
+
         - _get_output(self, image): tendrá como entrada la imagen sin preprocesar. Debe devolver la salida de la red
             neuronal. El formato de salida será el que cada red utilice.
 
@@ -36,13 +41,16 @@ class DetectionModel(ABC):
         - _calculate_label(self, output, obj_id, *args, **kwargs): recibe la salida de la red y el id del objeto y debe
             devolver el string de la etiqueta de la clase a la que pertenece el objeto.
 
-        :param offline_mode: (opcional)parámetro para indicar si usar los modelos localmente o descargarlos (en caso de
+        :param use_local: (opcional)parámetro para indicar si usar los modelos localmente o descargarlos (en caso de
             estar implementado).
         """
-        self.offline_mode = offline_mode
+        self.offline_mode = use_local
         # Comprobar que se ha establecido la ruta donde se encuentran los modelos localmente.
-        if offline_mode:
+        if use_local:
             assert self.models_path is not None, 'Set models_path to the directory with the models.'
+            self._load_local()
+        else:
+            self._load_online()
 
     def get_output(self, image):
         """
@@ -67,6 +75,14 @@ class DetectionModel(ABC):
         if not output:
             output = self._get_output(image)
         return self._get_objects(image, output)
+
+    @abstractmethod
+    def _load_local(self):
+        return None
+
+    @abstractmethod
+    def _load_online(self):
+        return None
 
     @abstractmethod
     def _get_output(self, image):

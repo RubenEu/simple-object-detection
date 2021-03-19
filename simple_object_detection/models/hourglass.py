@@ -5,20 +5,26 @@ from .tfhub_models import TFHubModel
 
 
 class CenterNetHourGlass(TFHubModel):
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
-        # Cargar nombres de clases
-        # Offline.
-        if self.offline_mode:
-            coco_names = self.models_path + 'coco.names'
-        # Online (descargar archivos).
-        if not self.offline_mode:
-            r = requests.get('https://raw.githubusercontent.com/pjreddie/darknet/master/data/coco.names')
-            open(self.temporal_folder + '/' + 'coco.names', 'wb').write(r.content)
-            coco_names = self.temporal_folder + '/yolov3/coco.names'
-        self.classes = []
-        with open(coco_names, 'r') as f:
-            self.classes = [line.strip() for line in f.readlines()]
+
+    def _load_local(self):
+        coco_names = self.models_path + 'coco.names'
+        # Load classes
+        self.classes = self._read_coco_names(coco_names)
+
+    def _load_online(self):
+        # Download coco.names
+        r = requests.get(
+            'https://raw.githubusercontent.com/pjreddie/darknet/master/data/coco.names')
+        open(self.temporal_folder + '/' + 'coco.names', 'wb').write(r.content)
+        coco_names = self.temporal_folder + '/yolov3/coco.names'
+        # Load classes
+        self.classes = self._read_coco_names(coco_names)
+
+    def _read_coco_names(self, file):
+        classes = []
+        with open(file, 'r') as f:
+            classes = [line.strip() for line in f.readlines()]
+        return classes
 
     def _preprocess_image(self, image):
         return tf.image.convert_image_dtype(image, tf.uint8)[tf.newaxis, ...]
@@ -50,16 +56,16 @@ class CenterNetHourGlass104512x512(CenterNetHourGlass):
     Realizado con:
         - https://tfhub.dev/tensorflow/centernet/hourglass_512x512/1
     """
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
-        local_module_handle = 'centernet_hourglass_512x512_1'
+
+    def _load_online(self):
+        super()._load_online()
         module_handle = "https://tfhub.dev/tensorflow/centernet/hourglass_512x512/1"
-        # Cargar el modelo localmente.
-        if self.offline_mode:
-            self.detector = hub.load(self.models_path + local_module_handle)
-        # Descargar el modelo online.
-        if not self.offline_mode:
-            self.detector = hub.load(module_handle)
+        self.detector = hub.load(module_handle)
+
+    def _load_local(self):
+        super()._load_local()
+        local_module_handle = 'centernet_hourglass_512x512_1'
+        hub.load(self.models_path + local_module_handle)
 
 
 class CenterNetHourGlass1041024x1024(CenterNetHourGlass):
@@ -76,13 +82,12 @@ class CenterNetHourGlass1041024x1024(CenterNetHourGlass):
         - https://www.tensorflow.org/hub/tutorials/tf2_object_detection?hl=hu
     """
 
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
-        local_module_handle = 'centernet_hourglass_1024x1024_1'
+    def _load_online(self):
+        super()._load_online()
         module_handle = "https://tfhub.dev/tensorflow/centernet/hourglass_1024x1024/1"
-        # Cargar el modelo localmente.
-        if self.offline_mode:
-            self.detector = hub.load(self.models_path + local_module_handle)
-        # Descargar el modelo online.
-        if not self.offline_mode:
-            self.detector = hub.load(module_handle)
+        self.detector = hub.load(module_handle)
+
+    def _load_local(self):
+        super()._load_local()
+        local_module_handle = 'centernet_hourglass_1024x1024_1'
+        self.detector = hub.load(self.models_path + local_module_handle)

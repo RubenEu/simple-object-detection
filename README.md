@@ -40,7 +40,12 @@ network = YOLOv3(offline_mode=True)
 Las clases de los modelos deben implementar la clase abstracta [DetecionModel](detection_model.py).
 
 Los métodos a sobrescribir son:
- - **_get_output(self, image)**: tendrá como entrada la imagen sin preprocesar. Debe devolver la salida de la red
+
+- **_load_local(self)**: carga el modelo desde la carpeta de modelos local.
+
+- **_load_online(self)**: carga el modelo descargándolo previamente.
+  
+- **_get_output(self, image)**: tendrá como entrada la imagen sin preprocesar. Debe devolver la salida de la red
 neuronal. El formato de salida será el que cada red utilice.
    
 - **_calculate_number_detections(self, output, \*args, \*\*kwargs)**: este método será llamado para obtener el número
@@ -66,7 +71,13 @@ class MyExampleModel(DetectionModel):
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        
+    
+    def _load_local(self):
+        return None
+    
+    def _load_online(self):
+        return None
+    
     def _get_output(self, image):
         return None
 

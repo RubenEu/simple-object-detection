@@ -15,14 +15,11 @@ class FasterRCNNInceptionResnetV2(TFHubModel):
         - https://tfhub.dev/google/faster_rcnn/openimages_v4/inception_resnet_v2/1
     """
 
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
+    def _load_local(self):
         local_module_handle = 'faster_rcnn_openimages_v4_inception_resnet_v2_1'
+        self.detector = hub.load(self.models_path + local_module_handle).signatures['default']
+
+    def _load_online(self):
         module_handle = "https://tfhub.dev/google/faster_rcnn/openimages_v4/inception_resnet_v2/1"
-        # Cargar el modelo localmente.
-        if self.offline_mode:
-            self.detector = hub.load(self.models_path + local_module_handle).signatures['default']
-        # Descargar el modelo online.
-        if not self.offline_mode:
-            self.detector = hub.load(module_handle).signatures['default']
+        self.detector = hub.load(module_handle).signatures['default']
 

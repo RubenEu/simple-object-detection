@@ -4,10 +4,10 @@ from simple_object_detection.utils import *
 
 image = load_image(file_path='../sample_data/tf.jpg')
 # Configurar la ruta de los modelos (local).
-# DetectionModel.models_path = '../models_data/'
+DetectionModel.models_path = '../models_data/'
 
 # Ejemplo usando YOLOv3 (la más rápida, por el momento).
-net = CenterNetHourGlass104512x512()
+net = SSDMobileNetV2(use_local=True)
 output = net.get_output(image)
 objects = net.get_objects(image, output)
 image_with_boxes = set_bounding_boxes_in_image(image, objects)

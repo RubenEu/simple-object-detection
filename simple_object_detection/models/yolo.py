@@ -43,24 +43,30 @@ class YOLOv3(DetectionModel):
         super().__init__(*args, **kwargs)
         # Parámetros para la predicción
         self.size = size if size else (320, 320)
-        # OFFLINE
-        if self.offline_mode:
-            yolov3_weights = self.models_path + 'yolov3/yolov3.weights'
-            yolov3_config = self.models_path + 'yolov3/yolov3.cfg'
-            coco_names = self.models_path + 'coco.names'
-        # ONLINE (descargar archivos).
-        if not self.offline_mode:
-            self._download_models_files()
-            yolov3_weights = self.temporal_folder + '/yolov3/yolov3.weights'
-            yolov3_config = self.temporal_folder + '/yolov3/yolov3.cfg'
-            coco_names = self.temporal_folder + '/yolov3/coco.names'
-        # Cargar la red
-        self.net = cv2.dnn.readNet(yolov3_weights, yolov3_config)
+
+    def _load_local(self):
+        yolov3_weights = self.models_path + 'yolov3/yolov3.weights'
+        yolov3_config = self.models_path + 'yolov3/yolov3.cfg'
+        coco_names = self.models_path + 'coco.names'
+        # Cargar modelo.
+        self._load_dnn_network(yolov3_weights, yolov3_config, coco_names)
+
+    def _load_online(self):
+        self._download_models_files()
+        yolov3_weights = self.temporal_folder + '/yolov3/yolov3.weights'
+        yolov3_config = self.temporal_folder + '/yolov3/yolov3.cfg'
+        coco_names = self.temporal_folder + '/yolov3/coco.names'
+        # Cargar modelo.
+        self._load_dnn_network(yolov3_weights, yolov3_config, coco_names)
+
+    def _load_dnn_network(self, weights, config, coco):
+        self.net = cv2.dnn.readNet(weights, config)
         self.classes = []
-        with open(coco_names, 'r') as f:
+        with open(coco, 'r') as f:
             self.classes = [line.strip() for line in f.readlines()]
         self.layers_names = self.net.getLayerNames()
-        self.output_layers = [self.layers_names[i[0] - 1] for i in self.net.getUnconnectedOutLayers()]
+        self.output_layers = [self.layers_names[i[0] - 1] for i in
+                              self.net.getUnconnectedOutLayers()]
 
     def _download_models_files(self):
         # TODO: Comprobar si están ya descargados.

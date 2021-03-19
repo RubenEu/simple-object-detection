@@ -19,7 +19,6 @@ class TFHubModel(DetectionModel, ABC):
 
     def __init__(self, *args, **kwargs):
         DetectionModel.__init__(self, *args, **kwargs)
-        self.detector = None
 
     def _preprocess_image(self, image):
         return tf.image.convert_image_dtype(image, tf.float32)[tf.newaxis, ...]
