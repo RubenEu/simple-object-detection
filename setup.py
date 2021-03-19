@@ -5,7 +5,7 @@ here = pathlib.Path(__file__).parent.resolve()
 
 setup(
     name='simple-object-detection',
-    version='0.0.1',
+    version='0.0.2',
     description='Wrapper for the use of object detector with different models.',
     author='Rubén García Rojas',
     author_email='garcia.ruben@outlook.es',
