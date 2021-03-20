@@ -65,7 +65,7 @@ class CenterNetHourGlass104512x512(CenterNetHourGlass):
     def _load_local(self):
         super()._load_local()
         local_module_handle = 'centernet_hourglass_512x512_1'
-        hub.load(self.models_path + local_module_handle)
+        self.detector = hub.load(self.models_path + local_module_handle)
 
 
 class CenterNetHourGlass1041024x1024(CenterNetHourGlass):
