@@ -34,7 +34,7 @@ from simple_object_detection import DetectionModel
 from simple_object_detection.models import YOLOv3
 
 DetectionModel.models_path = 'models_data/'
-network = YOLOv3(offline_mode=True)
+network = YOLOv3(use_local=True)
 ```
 
 Las clases de los modelos deben implementar la clase abstracta [DetecionModel](detection_model.py).
