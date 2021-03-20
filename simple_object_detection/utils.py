@@ -1,6 +1,6 @@
 import cv2
 import numpy as np
-
+import pickle
 
 def filter_objects(objects, classes=None, min_score=None):
     """
@@ -54,3 +54,54 @@ def load_image(file_path):
     img = cv2.imread(file_path)
     img = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
     return img
+
+
+def load_sequence(file_path):
+    """Carga un vídeo como una secuencia de imágenes (RGB).
+
+    :param file_path: ruta del video.
+    :return: lista con los frames.
+    """
+    cap = cv2.VideoCapture(file_path)
+    frames = list()
+    # Decodificar los frames y guardarlos en la lista.
+    frames_available = True
+    while frames_available:
+        retval, frame_bgr = cap.read()
+        if retval:
+            frame_rgb = cv2.cvtColor(frame_bgr, cv2.COLOR_BGR2RGB)
+            frames.append(frame_rgb)
+        else:
+            frames_available = False
+    cap.release()
+    return frames
+
+
+def save_detections_in_sequence(network, sequence, file_output):
+    """Guarda las detecciones realizadas en una secuencia.
+
+    :param network: red utilizada para la detección de objetos.
+    :param sequence: video donde extraer los frames.
+    :param file_output: archivo donde se guardará la lista de detecciones en cada frame.
+    """
+    objects_per_frame = list()
+    # Recorrer los frames.
+    for frame_id, frame in enumerate(sequence):
+        # Calcular y extraer los objetos e insertarlos en la lista.
+        objects = network.get_objects(frame)
+        objects_per_frame.insert(frame_id, objects)
+    # Guardar las detecciones
+    with open(file_output, 'wb') as output:  # Overwrites any existing file.
+        pickle.dump(objects_per_frame, output, pickle.HIGHEST_PROTOCOL)
+
+
+def load_detections_in_sequence(file_input):
+    """Carga las detecciones guardadas en una archivo.
+
+    :param file_input: dirección al archivo.
+    :return: lista de detecciones de objetos en cada frame.
+    """
+    objects_per_frame = None
+    with open(file_input, 'rb') as input:
+        objects_per_frame = pickle.load(input)
+    return objects_per_frame
