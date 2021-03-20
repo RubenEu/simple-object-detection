@@ -16,7 +16,7 @@ class CenterNetHourGlass(TFHubModel):
         r = requests.get(
             'https://raw.githubusercontent.com/pjreddie/darknet/master/data/coco.names')
         open(self.temporal_folder + '/' + 'coco.names', 'wb').write(r.content)
-        coco_names = self.temporal_folder + '/yolov3/coco.names'
+        coco_names = self.temporal_folder + '/coco.names'
         # Load classes
         self.classes = self._read_coco_names(coco_names)
 
