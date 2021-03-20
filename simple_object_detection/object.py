@@ -75,9 +75,10 @@ class Object:
         return self.score >= score
 
     def __str__(self):
-        return 'ObjectDetected<id={}, class={}>'.format(
+        return 'ObjectDetected<id={}, class={}, score={}>'.format(
             self.index,
-            self.label
+            self.label,
+            self.score
         )
 
     def __repr__(self):
