@@ -61,9 +61,12 @@ def load_sequence(file_path):
     """Carga un vídeo como una secuencia de imágenes (RGB).
 
     :param file_path: ruta del video.
-    :return: lista con los frames.
+    :return: (anchura, altura, nº de imágenes por segundo, secuencia).
     """
     cap = cv2.VideoCapture(file_path)
+    width = cap.get(cv2.CAP_PROP_FRAME_WIDTH)
+    height = cap.get(cv2.CAP_PROP_FRAME_HEIGHT)
+    frames_per_second = cap.get(cv2.CAP_PROP_FPS)
     frames = list()
     # Decodificar los frames y guardarlos en la lista.
     frames_available = True
@@ -75,7 +78,7 @@ def load_sequence(file_path):
         else:
             frames_available = False
     cap.release()
-    return frames
+    return int(width), int(height), frames_per_second, frames
 
 
 def save_sequence(sequence, frame_width, frame_height, frames_per_second, file_output):
