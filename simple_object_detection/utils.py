@@ -3,24 +3,43 @@ import numpy as np
 import pickle
 
 
-def filter_objects(objects, classes=None, min_score=None):
-    """
-    Filtra una lista de objetos según las propiedades indicadas por parámetro.
+def filter_objects_by_classes(objects, classes):
+    objects_classes = [obj.label.lower() for obj in objects]
+    filter_classes = [label.lower() for label in classes]
+    objects_filter = np.isin(objects_classes, filter_classes)
+    return objects[objects_filter]
 
-    :param objects: lista de objetos para ser filtrados.
-    :param classes: lista de clases por las que se desea filtrar.
-    :param min_score: puntuación mínima que deben cumplir los objetos.
-    :return: array slice de los objetos filtrados.
-    """
-    if classes:
-        objects_classes = [obj.label.lower() for obj in objects]
-        filter_classes = [label.lower() for label in classes]
-        objects_filter = np.isin(objects_classes, filter_classes)
-        objects = objects[objects_filter]
-    if min_score:
-        objects_filter = [True if obj.is_greatereq_scored_than(min_score) else False for obj in objects]
-        objects = objects[objects_filter]
-    return objects
+
+def filter_objects_by_min_score(objects, min_score):
+    objects_filter = [True if obj.is_greatereq_scored_than(min_score) else False for obj in objects]
+    return objects[objects_filter]
+
+
+def filter_objects_avoiding_duplicated(objects, max_distance=20):
+    # Lista de los objetos que han sido filtrados (eliminados).
+    filtered_objects = np.full(len(objects), False)
+    # Para cada objeto detectado, ver si tiene posibles candidatos duplicados:
+    for obj_id, obj in enumerate(objects):
+        for candidate_id, candidate in enumerate(objects):
+            # Ignorar el mismo objeto como candidato.
+            if obj_id == candidate_id:
+                continue
+            # Ignorar si alguno de los que se está comparando se ha sido filtrado ya.
+            if filtered_objects[obj_id] or filtered_objects[candidate_id]:
+                continue
+            # Calcular distancia euclídea.
+            p = np.array(obj.get_centroid())
+            q = np.array(candidate.get_centroid())
+            eu_distance = np.linalg.norm(p - q)
+            # Si hay muy poca distancia entre ellos, puede ser el mismo.
+            if eu_distance <= max_distance:
+                # Elegir el que mayor puntuación tiene.
+                if obj.score > candidate.score:
+                    filtered_objects[candidate_id] = True
+                else:
+                    filtered_objects[obj_id] = True
+    # Devolver los objetos que no han sido filtrados.
+    return objects[np.logical_not(filtered_objects)]
 
 
 def set_bounding_boxes_in_image(image, objects):
