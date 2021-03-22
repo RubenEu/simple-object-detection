@@ -2,6 +2,7 @@ import cv2
 import numpy as np
 import pickle
 
+
 def filter_objects(objects, classes=None, min_score=None):
     """
     Filtra una lista de objetos según las propiedades indicadas por parámetro.
@@ -75,6 +76,15 @@ def load_sequence(file_path):
             frames_available = False
     cap.release()
     return frames
+
+
+def save_sequence(sequence, frame_width, frame_height, frames_per_second, file_output):
+    fourcc = cv2.VideoWriter_fourcc(*'DIVX')
+    out = cv2.VideoWriter(file_output, fourcc, frames_per_second, (frame_width, frame_height))
+    for frame in sequence:
+        frame_bgr = cv2.cvtColor(frame, cv2.COLOR_RGB2BGR)
+        out.write(frame_bgr)
+    out.release()
 
 
 def save_detections_in_sequence(network, sequence, file_output):
