@@ -1,10 +1,11 @@
 import requests
 import tensorflow as tf
 import tensorflow_hub as hub
+from abc import ABC
 from .tfhub_models import TFHubModel
 
 
-class CenterNetHourGlass(TFHubModel):
+class CenterNetHourGlass(TFHubModel, ABC):
 
     def _load_local(self):
         coco_names = self.models_path + 'coco.names'
