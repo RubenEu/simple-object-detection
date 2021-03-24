@@ -8,14 +8,14 @@ from .tfhub_models import TFHubModel
 class CenterNetHourGlass(TFHubModel, ABC):
 
     def _load_local(self):
-        coco_names = self.models_path + 'coco.names'
+        coco_names = self.models_path + 'coco-labels-paper.txt'
         # Load classes
         self.classes = self._read_coco_names(coco_names)
 
     def _load_online(self):
         # Download coco.names
         r = requests.get(
-            'https://raw.githubusercontent.com/pjreddie/darknet/master/data/coco.names')
+            'https://raw.githubusercontent.com/amikelive/coco-labels/master/coco-labels-paper.txt')
         open(self.temporal_folder + '/' + 'coco.names', 'wb').write(r.content)
         coco_names = self.temporal_folder + '/coco.names'
         # Load classes
