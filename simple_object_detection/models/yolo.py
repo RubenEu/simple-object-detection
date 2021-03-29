@@ -4,6 +4,50 @@ import numpy as np
 import cv2
 import requests
 import os
+import torch
+
+
+class YOLOv5s(DetectionModel):
+    """
+    YOLOv5s
+
+    Realizado con:
+        - https://github.com/ultralytics/yolov5
+        - https://heartbeat.fritz.ai/a-2019-guide-to-object-detection-9509987954c3#3837
+    """
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        # Definir size del modelo (640, 640).
+        self.model_size = 640
+
+    def _load_local(self):
+        raise NotImplemented('Model not implemeted for local use.')
+
+    def _load_online(self):
+        self.model = torch.hub.load('ultralytics/yolov5', 'yolov5s')
+        # Download and charge coco names
+        r = requests.get(
+            'https://raw.githubusercontent.com/amikelive/coco-labels/master/coco-labels-paper.txt')
+        self.classes = [line.strip() for line in r.text.split('\n')]
+
+    def _get_output(self, image):
+        return self.model([image], size=self.model_size)
+
+    def _calculate_number_detections(self, output, *args, **kwargs):
+        return len(output.xyxy[0])
+
+    def _calculate_bounding_box(self, output, obj_id, *args, **kwargs):
+        xyxy = output.xyxy[0][obj_id]
+        left, top, right, bottom = xyxy[0], xyxy[1], xyxy[2], xyxy[3]
+        return np.array(np.clip([left, right, top, bottom], 0, None), dtype=np.uint32)
+
+    def _calculate_score(self, output, obj_id, *args, **kwargs):
+        return float(output.xyxy[0][obj_id][4])
+
+    def _calculate_label(self, output, obj_id, *args, **kwargs):
+        class_id = int(output.xyxy[0][obj_id][5])
+        return self.classes[class_id]
+
 
 class YOLOv3(DetectionModel):
     """

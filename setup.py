@@ -9,8 +9,17 @@ setup(
     packages=find_packages(),
     install_requires=[
         'numpy',
+        'requests',
         'tensorflow',
         'tensorflow-hub',
-        'opencv-python'
+        'opencv-python',
+        'torch',
+        'torchvision',
+        'PyYAML',
+        'matplotlib',
+        'pandas',
+        'pillow',
+        'tqdm',
+        'seaborn',
     ]
 )

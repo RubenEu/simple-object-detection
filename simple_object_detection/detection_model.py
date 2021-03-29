@@ -1,5 +1,7 @@
+from simple_object_detection.object import Object
 from abc import ABC, abstractmethod
 import tempfile
+import numpy as np
 
 
 class DetectionModel(ABC):
@@ -76,6 +78,21 @@ class DetectionModel(ABC):
             output = self._get_output(image)
         return self._get_objects(image, output)
 
+    def _get_objects(self, image, output):
+        num_detections = self._calculate_number_detections(output)
+        objects = np.empty((num_detections,), dtype=Object)
+        # Añadir los objetos a la lista.
+        for obj_id in range(0, num_detections):
+            object_detected = Object(
+                obj_id,
+                bounding_box=self._calculate_bounding_box(output, obj_id, image=image),
+                score=self._calculate_score(output, obj_id),
+                label=self._calculate_label(output, obj_id),
+                # TODO: El resto de etiquetas que traiga el modelo (quitando el prefijo detection maybe si lo tiene?)
+            )
+            objects[obj_id] = object_detected
+        return objects
+
     @abstractmethod
     def _load_local(self):
         return None
@@ -86,10 +103,6 @@ class DetectionModel(ABC):
 
     @abstractmethod
     def _get_output(self, image):
-        return None
-
-    @abstractmethod
-    def _get_objects(self, image, output):
         return None
 
     @abstractmethod
