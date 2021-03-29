@@ -1,3 +1,5 @@
+TODO: Documentación anticuada. Falta actualizarla a la versión actual.
+
 # Simple object detection
 
 Librería para la extracción de características de la detección de objetos con diferentes

@@ -1,4 +1,3 @@
-from .yolo import YOLOv3, YOLOv5s
-from .faster import FasterRCNNInceptionResnetV2
-from .mobilenet import SSDMobileNetV2
-from .hourglass import CenterNetHourGlass104512x512, CenterNetHourGlass1041024x1024
+from simple_object_detection.models.yolo import YOLOv5s, YOLOv5m, YOLOv5l, YOLOv5x
+from simple_object_detection.models.faster import FasterRCNNInceptionResnetV2
+from simple_object_detection.models.mobilenet import SSDMobileNetV2

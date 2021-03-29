@@ -2,47 +2,28 @@ import cv2
 import numpy as np
 import pickle
 
+from typing import Tuple, List
 
-def filter_objects_by_classes(objects, classes):
-    objects_classes = [obj.label.lower() for obj in objects]
-    filter_classes = [label.lower() for label in classes]
-    objects_filter = np.isin(objects_classes, filter_classes)
-    return objects[objects_filter]
+from simple_object_detection.typing import Image, Model
+from simple_object_detection.object import Object
 
 
-def filter_objects_by_min_score(objects, min_score):
-    objects_filter = [True if obj.is_greatereq_scored_than(min_score) else False for obj in objects]
-    return objects[objects_filter]
+def filter_objects_by_classes(objects: List[Object], classes: List[str]) -> List[Object]:
+    # Preprocesar las clases para ponerlas todas en minúscula.
+    classes = [class_name.lower() for class_name in classes]
+    # Devolver la lista de los objetos etiquetados con esas clases.
+    return list(filter(lambda obj: obj.label in classes, objects))
 
 
-def filter_objects_avoiding_duplicated(objects, max_distance=20):
-    # Lista de los objetos que han sido filtrados (eliminados).
-    filtered_objects = np.full(len(objects), False)
-    # Para cada objeto detectado, ver si tiene posibles candidatos duplicados:
-    for obj_id, obj in enumerate(objects):
-        for candidate_id, candidate in enumerate(objects):
-            # Ignorar el mismo objeto como candidato.
-            if obj_id == candidate_id:
-                continue
-            # Ignorar si alguno de los que se está comparando se ha sido filtrado ya.
-            if filtered_objects[obj_id] or filtered_objects[candidate_id]:
-                continue
-            # Calcular distancia euclídea.
-            p = np.array(obj.get_centroid())
-            q = np.array(candidate.get_centroid())
-            eu_distance = np.linalg.norm(p - q)
-            # Si hay muy poca distancia entre ellos, puede ser el mismo.
-            if eu_distance <= max_distance:
-                # Elegir el que mayor puntuación tiene.
-                if obj.score > candidate.score:
-                    filtered_objects[candidate_id] = True
-                else:
-                    filtered_objects[obj_id] = True
-    # Devolver los objetos que no han sido filtrados.
-    return objects[np.logical_not(filtered_objects)]
+def filter_objects_by_min_score(objects: List[Object], min_score: float) -> List[Object]:
+    return list(filter(lambda obj: obj.score >= min_score, objects))
 
 
-def set_bounding_boxes_in_image(image, objects):
+def filter_objects_avoiding_duplicated(objects: List[Object], max_distance: int) -> List[Object]:
+    ...  # TODO
+
+
+def draw_bounding_boxes(image: Image, objects: List[Object]) -> Image:
     """
     Añade las cajas delimitadoras a todos los objetos en la imagen.
 
@@ -53,30 +34,32 @@ def set_bounding_boxes_in_image(image, objects):
     image_with_boxes = image.copy()
     colors = np.random.uniform(0, 255, size=(len(objects), 3))
     for idx, obj in enumerate(objects):
-        (left, right, top, bottom) = obj.bounding_box
+        (top_left, _, bottom_right, _) = obj.bounding_box
         color = colors[idx]
         label = obj.label
         # Etiqueta para mostrar.
         display_str = "{}: {}%".format(label, int(100 * obj.score))
         # Añadir texto.
-        cv2.putText(image_with_boxes, display_str, (left, top - 5), cv2.FONT_HERSHEY_COMPLEX, 0.85, color, 2)
+        x, y = top_left
+        cv2.putText(image_with_boxes, display_str, (x, y - 5), cv2.FONT_HERSHEY_COMPLEX, 0.85,
+                    color, 2)
         # Añadir caja delimitadora.
-        cv2.rectangle(image_with_boxes, (left, top), (right, bottom), color, 2)
+        cv2.rectangle(image_with_boxes, top_left, bottom_right, color, 2)
     return image_with_boxes
 
 
-def load_image(file_path):
+def load_image(file_path: str) -> Image:
     """
     Carga una imagen en un numpy array en formato RGB.
 
-    :return: ndarray con la imagen (formato RGB).
+    :return: imagen.
     """
     img = cv2.imread(file_path)
     img = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
     return img
 
 
-def load_sequence(file_path):
+def load_sequence(file_path: str) -> Tuple[int, int, int, List[Image]]:
     """Carga un vídeo como una secuencia de imágenes (RGB).
 
     :param file_path: ruta del video.
@@ -85,7 +68,7 @@ def load_sequence(file_path):
     cap = cv2.VideoCapture(file_path)
     width = cap.get(cv2.CAP_PROP_FRAME_WIDTH)
     height = cap.get(cv2.CAP_PROP_FRAME_HEIGHT)
-    frames_per_second = cap.get(cv2.CAP_PROP_FPS)
+    frames_per_second = int(cap.get(cv2.CAP_PROP_FPS))
     frames = list()
     # Decodificar los frames y guardarlos en la lista.
     frames_available = True
@@ -100,7 +83,19 @@ def load_sequence(file_path):
     return int(width), int(height), frames_per_second, frames
 
 
-def save_sequence(sequence, frame_width, frame_height, frames_per_second, file_output):
+def save_sequence(sequence: List[Image],
+                  frame_width: int,
+                  frame_height: int,
+                  frames_per_second: int,
+                  file_output: str) -> None:
+    """Guarda una secuencia de frames como un vídeo.
+
+    :param sequence: secuencia de frames.
+    :param frame_width: anchura de los frames.
+    :param frame_height: altura de los frames.
+    :param frames_per_second: frames por segundo.
+    :param file_output: archivo donde se guardará (sobreescribe si ya existe).
+    """
     fourcc = cv2.VideoWriter_fourcc(*'DIVX')
     out = cv2.VideoWriter(file_output, fourcc, frames_per_second, (frame_width, frame_height))
     for frame in sequence:
@@ -109,7 +104,7 @@ def save_sequence(sequence, frame_width, frame_height, frames_per_second, file_o
     out.release()
 
 
-def save_detections_in_sequence(network, sequence, file_output):
+def save_detections_in_sequence(network: Model, sequence: List[Image], file_output: str) -> None:
     """Guarda las detecciones realizadas en una secuencia.
 
     :param network: red utilizada para la detección de objetos.
@@ -127,7 +122,7 @@ def save_detections_in_sequence(network, sequence, file_output):
         pickle.dump(objects_per_frame, output, pickle.HIGHEST_PROTOCOL)
 
 
-def load_detections_in_sequence(file_input):
+def load_detections_in_sequence(file_input: str) -> List[Object]:
     """Carga las detecciones guardadas en una archivo.
 
     :param file_input: dirección al archivo.

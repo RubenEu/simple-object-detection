@@ -1,5 +1,6 @@
 import tensorflow_hub as hub
-from .tfhub_models import TFHubModel
+
+from simple_object_detection.detection_model import TFHubModel
 
 
 class FasterRCNNInceptionResnetV2(TFHubModel):
@@ -17,9 +18,9 @@ class FasterRCNNInceptionResnetV2(TFHubModel):
 
     def _load_local(self):
         local_module_handle = 'faster_rcnn_openimages_v4_inception_resnet_v2_1'
-        self.detector = hub.load(self.models_path + local_module_handle).signatures['default']
+        return hub.load(self.models_path + local_module_handle).signatures['default']
 
     def _load_online(self):
         module_handle = "https://tfhub.dev/google/faster_rcnn/openimages_v4/inception_resnet_v2/1"
-        self.detector = hub.load(module_handle).signatures['default']
+        return hub.load(module_handle).signatures['default']
 
