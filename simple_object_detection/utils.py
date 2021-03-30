@@ -66,6 +66,9 @@ def load_sequence(file_path: str) -> Tuple[int, int, int, List[Image]]:
     :return: (anchura, altura, nº de imágenes por segundo, secuencia).
     """
     cap = cv2.VideoCapture(file_path)
+    # Comprobar si el vídeo está disponible.
+    if not cap.isOpened():
+        raise Exception(f'The {file_path} can\'t be opened or doesn\'t exists.')
     width = cap.get(cv2.CAP_PROP_FRAME_WIDTH)
     height = cap.get(cv2.CAP_PROP_FRAME_HEIGHT)
     frames_per_second = int(cap.get(cv2.CAP_PROP_FPS))
