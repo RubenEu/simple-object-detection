@@ -184,7 +184,7 @@ class PyTorchHubModel(DetectionModel, ABC):
     def _calculate_object_position(self, output: Model,
                                    obj_id: int, *args, **kwargs) -> Tuple[Point2D, int, int]:
         xywh = output.xywh[0][obj_id]
-        center, width, height = (xywh[0], xywh[1]), xywh[2], xywh[3]
+        center, width, height = (int(xywh[0]), int(xywh[1])), int(xywh[2]), int(xywh[3])
         return center, width, height
 
     def _calculate_score(self, output: ModelOutput, obj_id: int, *args, **kwargs) -> float:
