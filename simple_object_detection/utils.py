@@ -59,7 +59,7 @@ def load_image(file_path: str) -> Image:
     return img
 
 
-def load_sequence(file_path: str) -> Tuple[int, int, int, List[Image]]:
+def load_sequence(file_path: str) -> Tuple[int, int, float, List[Image], List[int]]:
     """Carga un vídeo como una secuencia de imágenes (RGB).
 
     :param file_path: ruta del video.
@@ -71,8 +71,9 @@ def load_sequence(file_path: str) -> Tuple[int, int, int, List[Image]]:
         raise Exception(f'The {file_path} can\'t be opened or doesn\'t exists.')
     width = cap.get(cv2.CAP_PROP_FRAME_WIDTH)
     height = cap.get(cv2.CAP_PROP_FRAME_HEIGHT)
-    frames_per_second = int(cap.get(cv2.CAP_PROP_FPS))
+    frames_per_second = float(cap.get(cv2.CAP_PROP_FPS))
     frames = list()
+    timestamps = list()
     # Decodificar los frames y guardarlos en la lista.
     frames_available = True
     while frames_available:
@@ -80,10 +81,11 @@ def load_sequence(file_path: str) -> Tuple[int, int, int, List[Image]]:
         if retval:
             frame_rgb = cv2.cvtColor(frame_bgr, cv2.COLOR_BGR2RGB)
             frames.append(frame_rgb)
+            timestamps.append(int(cap.get(cv2.CAP_PROP_POS_MSEC)))
         else:
             frames_available = False
     cap.release()
-    return int(width), int(height), frames_per_second, frames
+    return int(width), int(height), frames_per_second, frames, timestamps
 
 
 def save_sequence(sequence: List[Image],
