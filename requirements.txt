@@ -1,0 +1,13 @@
+numpy
+requests
+tensorflow
+tensorflow-hub
+opencv-python
+torch
+torchvision
+PyYAML
+matplotlib
+pandas
+pillow
+tqdm
+seaborn

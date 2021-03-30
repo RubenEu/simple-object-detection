@@ -122,13 +122,11 @@ def save_detections_in_sequence(network: Model, sequence: List[Image], file_outp
         pickle.dump(objects_per_frame, output, pickle.HIGHEST_PROTOCOL)
 
 
-def load_detections_in_sequence(file_input: str) -> List[Object]:
+def load_detections_in_sequence(file_path: str) -> List[Object]:
     """Carga las detecciones guardadas en una archivo.
 
-    :param file_input: dirección al archivo.
+    :param file_path: dirección al archivo.
     :return: lista de detecciones de objetos en cada frame.
     """
-    objects_per_frame = None
-    with open(file_input, 'rb') as input:
-        objects_per_frame = pickle.load(input)
-    return objects_per_frame
+    with open(file_path, 'rb') as file:
+        return pickle.load(file)

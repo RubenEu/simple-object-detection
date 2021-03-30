@@ -1,6 +1,6 @@
 import numpy as np
 
-from typing import Type, Any, TypeVar, List, Tuple
+from typing import Type, Any, TypeVar, Tuple
 
 
 Model: Type = Any
