@@ -43,7 +43,7 @@ class Object:
         return (x_left, y_top), (x_right, y_top), (x_right, y_bottom), (x_left, y_bottom)
 
     def __str__(self):
-        return f'ObjectDetected<id={self.index}, class={self.label}, score={self.score}>'
+        return f'ObjectDetected<center={self.center}, class={self.label}, score={self.score}>'
 
     def __repr__(self):
         return self.__str__()
