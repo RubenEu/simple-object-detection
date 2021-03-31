@@ -19,8 +19,35 @@ def filter_objects_by_min_score(objects: List[Object], min_score: float) -> List
     return list(filter(lambda obj: obj.score >= min_score, objects))
 
 
-def filter_objects_avoiding_duplicated(objects: List[Object], max_distance: int) -> List[Object]:
-    ...  # TODO
+def filter_objects_avoiding_duplicated(objects: List[Object], max_distance: int = 20) -> List[Object]:
+    # Lista de las posiciones en 'objects' de los objetos eliminados.
+    removed_objects_id = list()
+    # Buscar los posibles candidatos para cada objeto.
+    for obj_id, obj_detection in enumerate(objects):
+        for candidate_id, candidate_detection in enumerate(objects):
+            # Ignorar el mismo objeto como posible candidato.
+            if obj_id == candidate_id:
+                continue
+            # Ignorar si alguno de los que se está comparando ha sido eliminado ya.
+            if obj_id in removed_objects_id or candidate_id in removed_objects_id:
+                continue
+            # Calcular la distancia euclídea entre ambas detecciones.
+            p = np.array(obj_detection.center)
+            q = np.array(candidate_detection.center)
+            distance = np.linalg.norm(p - q)
+            # Si hay poca distancia, puede ser el mismo objeto.
+            if distance <= max_distance:
+                # Eliminar el que menos puntuación tiene.
+                if obj_detection.score > candidate_detection.score:
+                    removed_objects_id.append(candidate_id)
+                else:
+                    removed_objects_id.append(obj_id)
+    # Lista de los objetos que han pasado el filtro.
+    objects_filtered: List[Object] = list()
+    for obj_id, obj_detection in enumerate(objects):
+        if obj_id not in removed_objects_id:
+            objects_filtered.append(obj_detection)
+    return objects_filtered
 
 
 def draw_bounding_boxes(image: Image, objects: List[Object]) -> Image:
