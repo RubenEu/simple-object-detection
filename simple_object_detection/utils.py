@@ -88,6 +88,22 @@ def load_sequence(file_path: str) -> Tuple[int, int, float, List[Image], List[in
     return int(width), int(height), frames_per_second, frames, timestamps
 
 
+def change_frame_rate_sequence(sequence: List[Image],
+                               fps: float,
+                               new_frame_rate: float) -> List[Image]:
+    sequence_frames = len(sequence)
+    sequence_duration = sequence_frames / fps
+    sequence_new_frames = int(sequence_duration * new_frame_rate)
+    frame_step = sequence_frames / (sequence_duration * new_frame_rate)
+    new_sequence: List[Image] = list()
+    for frame_index in range(sequence_new_frames):
+        new_frame_index = int(frame_step * frame_index)
+        # Asegurar que no salta fuera de la secuencia original.
+        if new_frame_index < sequence_frames:
+            new_sequence.append(sequence[new_frame_index])
+    return new_sequence
+
+
 def save_sequence(sequence: List[Image],
                   frame_width: int,
                   frame_height: int,
@@ -109,17 +125,8 @@ def save_sequence(sequence: List[Image],
     frame_width = int(frame_width * resize_factor)
     frame_height = int(frame_height * resize_factor)
     # Cáculo del nuevo frame rate.
-    if new_frame_rate:
-        if new_frame_rate > frames_per_second:
-            raise Exception('The new frame rate can\'t be greater than the original.')
-        frame_ratio = frames_per_second / new_frame_rate
-        new_sequence = list()
-        for frame in range(len(sequence)):
-            # Por cada 'frames_per_second' cantidad de frames, hay que descartar 'frames_per_second' - 'new_frame_rate'
-            # frames.
-            if not frame % frame_ratio:
-                new_sequence.append(sequence[frame])
-        sequence = new_sequence
+    if new_frame_rate is not None:
+        sequence = change_frame_rate_sequence(sequence, frames_per_second, new_frame_rate)
         frames_per_second = new_frame_rate
     # Cargar codec y video de salida.
     fourcc = cv2.VideoWriter_fourcc(*'DIVX')
