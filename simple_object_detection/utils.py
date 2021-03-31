@@ -63,7 +63,7 @@ def load_sequence(file_path: str) -> Tuple[int, int, float, List[Image], List[in
     """Carga un vídeo como una secuencia de imágenes (RGB).
 
     :param file_path: ruta del video.
-    :return: (anchura, altura, nº de imágenes por segundo, secuencia).
+    :return: (anchura, altura, nº de imágenes por segundo, secuencia, timestamps).
     """
     cap = cv2.VideoCapture(file_path)
     # Comprobar si el vídeo está disponible.
@@ -92,7 +92,8 @@ def save_sequence(sequence: List[Image],
                   frame_width: int,
                   frame_height: int,
                   frames_per_second: int,
-                  file_output: str) -> None:
+                  file_output: str,
+                  resize_factor: float = 1) -> None:
     """Guarda una secuencia de frames como un vídeo.
 
     :param sequence: secuencia de frames.
@@ -100,12 +101,20 @@ def save_sequence(sequence: List[Image],
     :param frame_height: altura de los frames.
     :param frames_per_second: frames por segundo.
     :param file_output: archivo donde se guardará (sobreescribe si ya existe).
+    :param resize_factor: la salida tendrá un tamaño redimensionado por el factor indicado.
     """
+    # Redimensionar el frame si es necseario.
+    frame_width = int(frame_width * resize_factor)
+    frame_height = int(frame_height * resize_factor)
+    # Cargar codec y video de salida.
     fourcc = cv2.VideoWriter_fourcc(*'DIVX')
     out = cv2.VideoWriter(file_output, fourcc, frames_per_second, (frame_width, frame_height))
+    # Procesar cada frame de la secuencia.
     for frame in sequence:
-        frame_bgr = cv2.cvtColor(frame, cv2.COLOR_RGB2BGR)
-        out.write(frame_bgr)
+        frame = cv2.cvtColor(frame, cv2.COLOR_RGB2BGR)
+        if resize_factor != 1:
+            frame = cv2.resize(frame, (frame_width, frame_height))
+        out.write(frame)
     out.release()
 
 
