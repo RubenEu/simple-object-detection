@@ -91,9 +91,10 @@ def load_sequence(file_path: str) -> Tuple[int, int, float, List[Image], List[in
 def save_sequence(sequence: List[Image],
                   frame_width: int,
                   frame_height: int,
-                  frames_per_second: int,
+                  frames_per_second: float,
                   file_output: str,
-                  resize_factor: float = 1) -> None:
+                  resize_factor: float = 1,
+                  new_frame_rate: float = None) -> None:
     """Guarda una secuencia de frames como un vídeo.
 
     :param sequence: secuencia de frames.
@@ -102,10 +103,24 @@ def save_sequence(sequence: List[Image],
     :param frames_per_second: frames por segundo.
     :param file_output: archivo donde se guardará (sobreescribe si ya existe).
     :param resize_factor: la salida tendrá un tamaño redimensionado por el factor indicado.
+    :param new_frame_rate: nueva tasa de frames por segundo (tiene que ser menor que la tasa original).
     """
     # Redimensionar el frame si es necseario.
     frame_width = int(frame_width * resize_factor)
     frame_height = int(frame_height * resize_factor)
+    # Cáculo del nuevo frame rate.
+    if new_frame_rate:
+        if new_frame_rate > frames_per_second:
+            raise Exception('The new frame rate can\'t be greater than the original.')
+        frame_ratio = frames_per_second / new_frame_rate
+        new_sequence = list()
+        for frame in range(len(sequence)):
+            # Por cada 'frames_per_second' cantidad de frames, hay que descartar 'frames_per_second' - 'new_frame_rate'
+            # frames.
+            if not frame % frame_ratio:
+                new_sequence.append(sequence[frame])
+        sequence = new_sequence
+        frames_per_second = new_frame_rate
     # Cargar codec y video de salida.
     fourcc = cv2.VideoWriter_fourcc(*'DIVX')
     out = cv2.VideoWriter(file_output, fourcc, frames_per_second, (frame_width, frame_height))
