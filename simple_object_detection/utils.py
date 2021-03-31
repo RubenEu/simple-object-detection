@@ -19,8 +19,35 @@ def filter_objects_by_min_score(objects: List[Object], min_score: float) -> List
     return list(filter(lambda obj: obj.score >= min_score, objects))
 
 
-def filter_objects_avoiding_duplicated(objects: List[Object], max_distance: int) -> List[Object]:
-    ...  # TODO
+def filter_objects_avoiding_duplicated(objects: List[Object], max_distance: int = 20) -> List[Object]:
+    # Lista de las posiciones en 'objects' de los objetos eliminados.
+    removed_objects_id = list()
+    # Buscar los posibles candidatos para cada objeto.
+    for obj_id, obj_detection in enumerate(objects):
+        for candidate_id, candidate_detection in enumerate(objects):
+            # Ignorar el mismo objeto como posible candidato.
+            if obj_id == candidate_id:
+                continue
+            # Ignorar si alguno de los que se está comparando ha sido eliminado ya.
+            if obj_id in removed_objects_id or candidate_id in removed_objects_id:
+                continue
+            # Calcular la distancia euclídea entre ambas detecciones.
+            p = np.array(obj_detection.center)
+            q = np.array(candidate_detection.center)
+            distance = np.linalg.norm(p - q)
+            # Si hay poca distancia, puede ser el mismo objeto.
+            if distance <= max_distance:
+                # Eliminar el que menos puntuación tiene.
+                if obj_detection.score > candidate_detection.score:
+                    removed_objects_id.append(candidate_id)
+                else:
+                    removed_objects_id.append(obj_id)
+    # Lista de los objetos que han pasado el filtro.
+    objects_filtered: List[Object] = list()
+    for obj_id, obj_detection in enumerate(objects):
+        if obj_id not in removed_objects_id:
+            objects_filtered.append(obj_detection)
+    return objects_filtered
 
 
 def draw_bounding_boxes(image: Image, objects: List[Object]) -> Image:
@@ -59,17 +86,21 @@ def load_image(file_path: str) -> Image:
     return img
 
 
-def load_sequence(file_path: str) -> Tuple[int, int, int, List[Image]]:
+def load_sequence(file_path: str) -> Tuple[int, int, float, List[Image], List[int]]:
     """Carga un vídeo como una secuencia de imágenes (RGB).
 
     :param file_path: ruta del video.
-    :return: (anchura, altura, nº de imágenes por segundo, secuencia).
+    :return: (anchura, altura, nº de imágenes por segundo, secuencia, timestamps).
     """
     cap = cv2.VideoCapture(file_path)
+    # Comprobar si el vídeo está disponible.
+    if not cap.isOpened():
+        raise Exception(f'The {file_path} can\'t be opened or doesn\'t exists.')
     width = cap.get(cv2.CAP_PROP_FRAME_WIDTH)
     height = cap.get(cv2.CAP_PROP_FRAME_HEIGHT)
-    frames_per_second = int(cap.get(cv2.CAP_PROP_FPS))
+    frames_per_second = float(cap.get(cv2.CAP_PROP_FPS))
     frames = list()
+    timestamps = list()
     # Decodificar los frames y guardarlos en la lista.
     frames_available = True
     while frames_available:
@@ -77,17 +108,36 @@ def load_sequence(file_path: str) -> Tuple[int, int, int, List[Image]]:
         if retval:
             frame_rgb = cv2.cvtColor(frame_bgr, cv2.COLOR_BGR2RGB)
             frames.append(frame_rgb)
+            timestamps.append(int(cap.get(cv2.CAP_PROP_POS_MSEC)))
         else:
             frames_available = False
     cap.release()
-    return int(width), int(height), frames_per_second, frames
+    return int(width), int(height), frames_per_second, frames, timestamps
+
+
+def change_frame_rate_sequence(sequence: List[Image],
+                               fps: float,
+                               new_frame_rate: float) -> List[Image]:
+    sequence_frames = len(sequence)
+    sequence_duration = sequence_frames / fps
+    sequence_new_frames = int(sequence_duration * new_frame_rate)
+    frame_step = sequence_frames / (sequence_duration * new_frame_rate)
+    new_sequence: List[Image] = list()
+    for frame_index in range(sequence_new_frames):
+        new_frame_index = int(frame_step * frame_index)
+        # Asegurar que no salta fuera de la secuencia original.
+        if new_frame_index < sequence_frames:
+            new_sequence.append(sequence[new_frame_index])
+    return new_sequence
 
 
 def save_sequence(sequence: List[Image],
                   frame_width: int,
                   frame_height: int,
-                  frames_per_second: int,
-                  file_output: str) -> None:
+                  frames_per_second: float,
+                  file_output: str,
+                  resize_factor: float = 1,
+                  new_frame_rate: float = None) -> None:
     """Guarda una secuencia de frames como un vídeo.
 
     :param sequence: secuencia de frames.
@@ -95,12 +145,25 @@ def save_sequence(sequence: List[Image],
     :param frame_height: altura de los frames.
     :param frames_per_second: frames por segundo.
     :param file_output: archivo donde se guardará (sobreescribe si ya existe).
+    :param resize_factor: la salida tendrá un tamaño redimensionado por el factor indicado.
+    :param new_frame_rate: nueva tasa de frames por segundo (tiene que ser menor que la tasa original).
     """
+    # Redimensionar el frame si es necseario.
+    frame_width = int(frame_width * resize_factor)
+    frame_height = int(frame_height * resize_factor)
+    # Cáculo del nuevo frame rate.
+    if new_frame_rate is not None:
+        sequence = change_frame_rate_sequence(sequence, frames_per_second, new_frame_rate)
+        frames_per_second = new_frame_rate
+    # Cargar codec y video de salida.
     fourcc = cv2.VideoWriter_fourcc(*'DIVX')
     out = cv2.VideoWriter(file_output, fourcc, frames_per_second, (frame_width, frame_height))
+    # Procesar cada frame de la secuencia.
     for frame in sequence:
-        frame_bgr = cv2.cvtColor(frame, cv2.COLOR_RGB2BGR)
-        out.write(frame_bgr)
+        frame = cv2.cvtColor(frame, cv2.COLOR_RGB2BGR)
+        if resize_factor != 1:
+            frame = cv2.resize(frame, (frame_width, frame_height))
+        out.write(frame)
     out.release()
 
 
