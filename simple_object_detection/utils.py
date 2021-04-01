@@ -6,6 +6,7 @@ from typing import Tuple, List
 
 from simple_object_detection.typing import Image, Model, SequenceLoaded
 from simple_object_detection.object import Object
+from simple_object_detection.exceptions import SimpleObjectDetectionException
 
 
 def filter_objects_by_classes(objects: List[Object], classes: List[str]) -> List[Object]:
@@ -82,6 +83,8 @@ def load_image(file_path: str) -> Image:
     :return: imagen.
     """
     img = cv2.imread(file_path)
+    if img is None:
+        raise SimpleObjectDetectionException('The image path doesn\'t exists.')
     img = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
     return img
 
