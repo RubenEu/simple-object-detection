@@ -12,7 +12,7 @@ def filter_objects_by_classes(objects: List[Object], classes: List[str]) -> List
     # Preprocesar las clases para ponerlas todas en minúscula.
     classes = [class_name.lower() for class_name in classes]
     # Devolver la lista de los objetos etiquetados con esas clases.
-    return list(filter(lambda obj: obj.label in classes, objects))
+    return list(filter(lambda obj: obj.label.lower() in classes, objects))
 
 
 def filter_objects_by_min_score(objects: List[Object], min_score: float) -> List[Object]:
