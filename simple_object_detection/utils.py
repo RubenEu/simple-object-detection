@@ -4,7 +4,7 @@ import pickle
 
 from typing import Tuple, List
 
-from simple_object_detection.typing import Image, Model
+from simple_object_detection.typing import Image, Model, SequenceLoaded
 from simple_object_detection.object import Object
 
 
@@ -86,7 +86,7 @@ def load_image(file_path: str) -> Image:
     return img
 
 
-def load_sequence(file_path: str) -> Tuple[int, int, float, List[Image], List[int]]:
+def load_sequence(file_path: str) -> SequenceLoaded:
     """Carga un vídeo como una secuencia de imágenes (RGB).
 
     :param file_path: ruta del video.
@@ -193,3 +193,35 @@ def load_detections_in_sequence(file_path: str) -> List[Object]:
     """
     with open(file_path, 'rb') as file:
         return pickle.load(file)
+
+
+def load_sequence_by_frames(frames_files: List[str],
+                            fps: float,
+                            width: int = None,
+                            height: int = None) -> SequenceLoaded:
+    """
+    Carga una lista de imágenes dada la dirección del archivo y genera una secuencia de vídeo.
+
+    Calcula la duración de la secuencia con: duración = frames / fps.
+
+    Calcula el tiempo interpolando.
+    :param frames_files: direcciones de los archivos a las frames (ordenados).
+    :param fps: fotogramas por segundo.
+    :param width: ancho de la secuencia de video.
+    :param height: altura de la secuencia de video.
+    :return: (anchura, altura, nº de imágenes por segundo, secuencia, timestamps).
+    """
+    duration_ms: int = int((len(frames_files) / fps) * 1000)
+    ms_per_frame = duration_ms / len(frames_files)
+    timestamps: List[int] = [int(i*ms_per_frame) for i in range(len(frames_files))]
+    frames: List[Image] = list()
+    for frame_file in frames_files:
+        frames.append(load_image(frame_file))
+    # Calcular el ancho y alto dado el primer frame.
+    if width is None:
+        width = frames[0].shape[1]
+    if height is None:
+        height = frames[0].shape[0]
+
+    return width, height, fps, frames, timestamps
+
