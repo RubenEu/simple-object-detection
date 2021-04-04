@@ -23,7 +23,7 @@ class Object:
         """
         self.index = index
         self._center = center
-        self._bounding_box = None
+        self._bounding_box = self._create_bounding_box(center, width, height)
         self.width = width
         self.height = height
         self.score = score
@@ -40,27 +40,29 @@ class Object:
 
     @property
     def bounding_box(self) -> Tuple[Point2D, Point2D, Point2D, Point2D]:
-        """
-        Devuelve los 4 puntos de la caja delimitadora en el orden de las agujas del reloj comenzando
+        """Devuelve los 4 puntos de la caja delimitadora en el orden de las agujas del reloj comenzando
         en la esquina superior izquierda.
-
-        Si los puntos de la caja delimitadora no están almacenados en el atributo de instancia
-        _bounding_box, los calcula a partir del centro y ancho (asume que la caja delimitadora es
-        paralela a los ejes X e Y.
 
         :return: puntos de las esquinas de la caja delimitadora.
         """
-        if self._bounding_box is None:
-            center_x, center_y = self.center
-            x_left, x_right = int(center_x - (self.width / 2)), int(center_x + (self.width / 2))
-            y_top, y_bottom = int(center_y - (self.height / 2)), int(center_y + (self.height / 2))
-            self._bounding_box = ((x_left, y_top), (x_right, y_top),
-                                  (x_right, y_bottom), (x_left, y_bottom))
         return self._bounding_box
 
     @bounding_box.setter
     def bounding_box(self, new_bounding_box: Tuple[Point2D, Point2D, Point2D, Point2D]) -> None:
         self._bounding_box = new_bounding_box
+
+    @staticmethod
+    def _create_bounding_box(center, width, height):
+        """Calcula los puntos de la caja delimitadora dado el centro, ancho y alto.
+
+        La caja calculada es paralela a los ejes X e Y.
+
+        :return: caja delimitadora.
+        """
+        center_x, center_y = center
+        x_left, x_right = int(center_x - (width / 2)), int(center_x + (width / 2))
+        y_top, y_bottom = int(center_y - (height / 2)), int(center_y + (height / 2))
+        return (x_left, y_top), (x_right, y_top), (x_right, y_bottom), (x_left, y_bottom)
 
     def __str__(self):
         return f'ObjectDetected<center={self.center}, class={self.label}, score={self.score}>'
