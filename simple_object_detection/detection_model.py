@@ -1,5 +1,6 @@
 import tempfile
 import tensorflow as tf
+import cv2
 
 from abc import ABC, abstractmethod
 from typing import AnyStr, List, Tuple
@@ -41,7 +42,8 @@ class DetectionModel(ABC):
 
     def get_objects(self,
                     image: Image,
-                    output: ModelOutput = None) -> List[Object]:
+                    output: ModelOutput = None,
+                    mask: Image = None) -> List[Object]:
         """
         Devuelve todos los objetos que se extraen de la salida de la predicción de la red neuronal.
 
@@ -50,9 +52,15 @@ class DetectionModel(ABC):
 
         :param image: imagen.
         :param output: salida de la red neuronal.
+        :param mask: máscara para aplicar la zona donde se realizará la detección en la secuencia.
+        Si se ha pasado el output también y éste tiene detecciones fuera de la máscara, la máscara
+        no será aplicable.
         :return: objetos.
         """
-        if not output:
+        if output is None:
+            # Aplicar máscara a la imagen donde se realizará la detección.
+            if mask is not None:
+                image = cv2.bitwise_and(image, mask)
             output = self._get_output(image)
         return self._get_objects(image, output)
 
