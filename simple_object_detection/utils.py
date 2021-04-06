@@ -2,7 +2,7 @@ import cv2
 import numpy as np
 import pickle
 
-from typing import Tuple, List
+from typing import Tuple, List, Union
 
 from simple_object_detection.typing import Image, Model, SequenceLoaded
 from simple_object_detection.object import Object
@@ -89,16 +89,21 @@ def load_image(file_path: str) -> Image:
     return img
 
 
-def load_sequence(file_path: str) -> SequenceLoaded:
+def load_sequence(file_path: str,
+                  frame_start: Union[None, int] = None,
+                  frame_end: Union[None, int] = None) -> SequenceLoaded:
     """Carga un vídeo como una secuencia de imágenes (RGB).
 
     :param file_path: ruta del video.
+    :param frame_start: indica a partir de qué frame (incluído) que cargará.
+    :param frame_end: indica hasta qué frame (no incluído) se cargará.
     :return: (anchura, altura, nº de imágenes por segundo, secuencia, timestamps).
     """
     cap = cv2.VideoCapture(file_path)
     # Comprobar si el vídeo está disponible.
     if not cap.isOpened():
         raise Exception(f'The {file_path} can\'t be opened or doesn\'t exists.')
+    # Parámetros de la secuencia.
     width = cap.get(cv2.CAP_PROP_FRAME_WIDTH)
     height = cap.get(cv2.CAP_PROP_FRAME_HEIGHT)
     frames_per_second = float(cap.get(cv2.CAP_PROP_FPS))
@@ -106,12 +111,27 @@ def load_sequence(file_path: str) -> SequenceLoaded:
     timestamps = list()
     # Decodificar los frames y guardarlos en la lista.
     frames_available = True
-    while frames_available:
+    frame_id = 0
+    start_cond = True
+    end_cond = True
+    while frames_available and end_cond:
         retval, frame_bgr = cap.read()
+        # Comprobar si hay rango, y en ese caso, si el frame que se ha leído está en el rango.
+        start_cond = frame_start is None or (frame_start is not None and frame_start <= frame_id)
+        end_cond = frame_end is None or (frame_end is not None and frame_id < frame_end)
+        range_cond = start_cond and end_cond
+        # Comprobar si se cargó el frame siguiente.
         if retval:
-            frame_rgb = cv2.cvtColor(frame_bgr, cv2.COLOR_BGR2RGB)
-            frames.append(frame_rgb)
-            timestamps.append(int(cap.get(cv2.CAP_PROP_POS_MSEC)))
+            # Comprobar que el frame está en el rango.
+            if range_cond:
+                # Convertir a RGB.
+                frame_rgb = cv2.cvtColor(frame_bgr, cv2.COLOR_BGR2RGB)
+                # Guardar el frame.
+                frames.append(frame_rgb)
+                # Añadir el timestamp correspondiente a este frame.
+                timestamps.append(int(cap.get(cv2.CAP_PROP_POS_MSEC)))
+            # Pasar al siguiente frame id.
+            frame_id += 1
         else:
             frames_available = False
     cap.release()
