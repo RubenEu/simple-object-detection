@@ -190,6 +190,24 @@ def save_sequence(sequence: List[Image],
     out.release()
 
 
+def generate_detections_in_sequence(network: Model, sequence: List[Image],
+                                    mask: Image = None) -> List[List[Object]]:
+    """Genera las detecciones de objetos en cada frame.
+
+    :param network: red utilizada para la detección de objetos.
+    :param sequence: video donde extraer los frames.
+    :param mask: máscara para aplicar la zona donde se realizará la detección en la secuencia.
+    :return: lista con las detecciones por indexada por frame.
+    """
+    objects_per_frame = list()
+    # Recorrer los frames.
+    for frame_id, frame in enumerate(sequence):
+        # Calcular y extraer los objetos e insertarlos en la lista.
+        objects = network.get_objects(frame, mask=mask)
+        objects_per_frame.insert(frame_id, objects)
+    return objects_per_frame
+
+
 def save_detections_in_sequence(network: Model, sequence: List[Image], file_output: str,
                                 mask: Image = None) -> None:
     """Guarda las detecciones realizadas en una secuencia.
@@ -199,12 +217,7 @@ def save_detections_in_sequence(network: Model, sequence: List[Image], file_outp
     :param file_output: archivo donde se guardará la lista de detecciones en cada frame.
     :param mask: máscara para aplicar la zona donde se realizará la detección en la secuencia.
     """
-    objects_per_frame = list()
-    # Recorrer los frames.
-    for frame_id, frame in enumerate(sequence):
-        # Calcular y extraer los objetos e insertarlos en la lista.
-        objects = network.get_objects(frame, mask=mask)
-        objects_per_frame.insert(frame_id, objects)
+    objects_per_frame = generate_detections_in_sequence(network, sequence, mask)
     # Guardar las detecciones
     with open(file_output, 'wb') as output:  # Overwrites any existing file.
         pickle.dump(objects_per_frame, output, pickle.HIGHEST_PROTOCOL)
