@@ -62,7 +62,7 @@ def draw_bounding_boxes(image: Image, objects: List[Object]) -> Image:
     image_with_boxes = image.copy()
     colors = np.random.uniform(0, 255, size=(len(objects), 3))
     for idx, obj in enumerate(objects):
-        (top_left, _, bottom_right, _) = obj.bounding_box
+        (top_left, top_right, bottom_right, bottom_left) = obj.bounding_box
         color = colors[idx]
         label = obj.label
         # Etiqueta para mostrar.
@@ -72,7 +72,10 @@ def draw_bounding_boxes(image: Image, objects: List[Object]) -> Image:
         cv2.putText(image_with_boxes, display_str, (x, y - 5), cv2.FONT_HERSHEY_COMPLEX, 0.85,
                     color, 2)
         # Añadir caja delimitadora.
-        cv2.rectangle(image_with_boxes, top_left, bottom_right, color, 2)
+        cv2.line(image_with_boxes, top_left, top_right, color, 2, cv2.LINE_AA)
+        cv2.line(image_with_boxes, top_right, bottom_right, color, 2, cv2.LINE_AA)
+        cv2.line(image_with_boxes, bottom_right, bottom_left, color, 2, cv2.LINE_AA)
+        cv2.line(image_with_boxes, bottom_left, top_left, color, 2, cv2.LINE_AA)
     return image_with_boxes
 
 
