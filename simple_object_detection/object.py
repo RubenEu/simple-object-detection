@@ -40,8 +40,8 @@ class Object:
 
     @property
     def bounding_box(self) -> Tuple[Point2D, Point2D, Point2D, Point2D]:
-        """Devuelve los 4 puntos de la caja delimitadora en el orden de las agujas del reloj comenzando
-        en la esquina superior izquierda.
+        """Devuelve los 4 puntos de la caja delimitadora en el orden de las agujas del reloj
+        comenzando en la esquina superior izquierda.
 
         :return: puntos de las esquinas de la caja delimitadora.
         """
