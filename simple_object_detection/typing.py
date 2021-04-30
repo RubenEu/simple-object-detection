@@ -1,5 +1,3 @@
-from collections import namedtuple
-
 import numpy as np
 
 from typing import List, Type, Any, TypeVar, Tuple, NamedTuple
