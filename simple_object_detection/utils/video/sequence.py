@@ -10,6 +10,11 @@ class Sequence:
 
     Se utiliza la notación de acceso a un objeto ``object[item]``. Así se puede ir cargando
     el vídeo poco a poco sin llegar a saturar la memoria RAM.
+
+    TODO:
+    - Ir marcando los que se han visto.
+    - Crear un hilo que vaya trayendo los nuevos a memoria.
+    - Etc. Etc. Optimizar esto!
     """
     def __init__(self, video_path: str, cache_size: int = 100):
         # Abrir el stream con OpenCV.
