@@ -32,7 +32,6 @@ class Sequence:
         # Comprobación del ítem.
         if not isinstance(item, int):
             raise TypeError()
-        print(self.stream.get(cv2.CAP_PROP_POS_FRAMES))
         # Extraer el frame buscado.
         frame_bgr = self._get_frame(item)
         # Comprobar el valor de salida.
