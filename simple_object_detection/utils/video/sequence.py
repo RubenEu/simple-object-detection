@@ -44,6 +44,9 @@ class Sequence:
         frame_rgb = cv2.cvtColor(frame_bgr, cv2.COLOR_BGR2RGB)
         return frame_rgb
 
+    def __len__(self):
+        return self.num_frames
+
     def _get_frame(self, fid: int) -> Image:
         """TODO: Documentar.
 
