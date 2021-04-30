@@ -166,6 +166,8 @@ def save_sequence(sequence: List[Image],
                   new_frame_rate: float = None) -> None:
     """Guarda una secuencia de frames como un vídeo.
 
+    TODO: ¿Cómo plantear para que se vaya guardando poco a poco?
+
     :param sequence: secuencia de frames.
     :param frame_width: anchura de los frames.
     :param frame_height: altura de los frames.
