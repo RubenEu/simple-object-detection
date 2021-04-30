@@ -154,6 +154,9 @@ def load_sequence():
 def save_sequence(sequence: StreamSequence, file_output: str) -> None:
     """Guarda una secuencia de frames como un vídeo.
 
+    TODO: Eliminar el método y en su lugar crear una clase wrapper para VideoWriter e ir
+     guardando el vídeo poco a poco.
+
     :param sequence: secuencia de frames.
     :param file_output: archivo donde se guardará (sobreescribe si ya existe).
     """
