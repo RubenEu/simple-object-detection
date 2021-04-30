@@ -15,6 +15,7 @@ class Sequence:
     - Ir marcando los que se han visto.
     - Crear un hilo que vaya trayendo los nuevos a memoria.
     - Etc. Etc. Optimizar esto!
+    - Implementar __iter__. (PEP 234)
     """
     def __init__(self, video_path: str, cache_size: int = 100):
         # Abrir el stream con OpenCV.
@@ -44,7 +45,7 @@ class Sequence:
         return frame_rgb
 
     def _get_frame(self, fid: int) -> Image:
-        """
+        """TODO: Documentar.
 
         :param id:
         :return:
@@ -59,7 +60,7 @@ class Sequence:
         return cached
 
     def _search_in_cache(self, fid: int) -> Optional[Image]:
-        """
+        """TODO: Documentar.
 
         :param id:
         :return:
@@ -73,6 +74,8 @@ class Sequence:
 
     def _pull_to_cache(self, fid: int) -> Image:
         """Trae a caché los siguientes frames y devuelve el buscado.
+
+        TODO: Documentar.
 
         :return:
         """
@@ -139,3 +142,23 @@ class Sequence:
     @num_frames.setter
     def num_frames(self, value: int):
         self._num_frames = value
+
+
+def load_sequence():
+    raise DeprecationWarning('Use simple_object_detection.utils.video.Sequence class instead.')
+
+
+def save_sequence(sequence: Sequence, file_output: str) -> None:
+    """Guarda una secuencia de frames como un vídeo.
+
+    :param sequence: secuencia de frames.
+    :param file_output: archivo donde se guardará (sobreescribe si ya existe).
+    """
+    # Cargar codec y video de salida.
+    fourcc = cv2.VideoWriter_fourcc(*'DIVX')
+    out = cv2.VideoWriter(file_output, fourcc, sequence.fps, (sequence.width, sequence.height))
+    # Guardar cada frame de la secuencia.
+    for frame in sequence:
+        frame = cv2.cvtColor(frame, cv2.COLOR_RGB2BGR)
+        out.write(frame)
+    out.release()
