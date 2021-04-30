@@ -5,11 +5,11 @@ from typing import List
 
 from simple_object_detection.typing import Image, Model
 from simple_object_detection.object import Object
-from simple_object_detection.utils.video import Sequence
+from simple_object_detection.utils.video import StreamSequence
 
 
 def generate_objects_detections(network: Model,
-                                sequence: Sequence,
+                                sequence: StreamSequence,
                                 mask: Image = None) -> List[List[Object]]:
     """Genera las detecciones de objetos en cada frame de una secuencia de vídeo.
 

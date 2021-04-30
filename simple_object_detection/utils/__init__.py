@@ -1,5 +1,5 @@
 from simple_object_detection.utils.image import load_image, draw_bounding_boxes
-from simple_object_detection.utils.video import Sequence, load_sequence, save_sequence
+from simple_object_detection.utils.video import StreamSequence, load_sequence, save_sequence
 from simple_object_detection.utils.objects_detections import (generate_objects_detections,
                                                               save_objects_detections,
                                                               load_object_detections,

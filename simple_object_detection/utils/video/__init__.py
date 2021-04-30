@@ -1,1 +1,1 @@
-from simple_object_detection.utils.video.sequence import Sequence, load_sequence, save_sequence
+from simple_object_detection.utils.video.sequence import StreamSequence, load_sequence, save_sequence

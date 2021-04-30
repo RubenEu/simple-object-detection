@@ -5,7 +5,7 @@ import cv2
 from simple_object_detection.typing import Image
 
 
-class Sequence:
+class StreamSequence:
     """Clase para cargar los frames de una secuencia de vídeo.
 
     Se utiliza la notación de acceso a un objeto ``object[item]``. Así se puede ir cargando
@@ -148,10 +148,10 @@ class Sequence:
 
 
 def load_sequence():
-    raise DeprecationWarning('Use simple_object_detection.utils.video.Sequence class instead.')
+    raise DeprecationWarning('Use simple_object_detection.utils.video.StreamSequence class instead.')
 
 
-def save_sequence(sequence: Sequence, file_output: str) -> None:
+def save_sequence(sequence: StreamSequence, file_output: str) -> None:
     """Guarda una secuencia de frames como un vídeo.
 
     :param sequence: secuencia de frames.
