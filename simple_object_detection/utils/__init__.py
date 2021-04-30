@@ -7,6 +7,7 @@ from typing import Tuple, List, Union
 from simple_object_detection.typing import Image, Model, SequenceLoaded
 from simple_object_detection.object import Object
 from simple_object_detection.exceptions import SimpleObjectDetectionException
+from simple_object_detection.utils.video import Sequence
 
 
 def filter_objects_by_classes(objects: List[Object], classes: List[str]) -> List[Object]:
@@ -102,102 +103,32 @@ def load_sequence(file_path: str,
     :param frame_end: indica hasta qué frame (no incluído) se cargará.
     :return: (anchura, altura, nº de imágenes por segundo, secuencia, timestamps).
     """
-    cap = cv2.VideoCapture(file_path)
-    # Comprobar si el vídeo está disponible.
-    if not cap.isOpened():
-        raise Exception(f'The {file_path} can\'t be opened or doesn\'t exists.')
-    # Parámetros de la secuencia.
-    width = cap.get(cv2.CAP_PROP_FRAME_WIDTH)
-    height = cap.get(cv2.CAP_PROP_FRAME_HEIGHT)
-    frames_per_second = float(cap.get(cv2.CAP_PROP_FPS))
-    frames = list()
-    timestamps = list()
-    # Decodificar los frames y guardarlos en la lista.
-    frames_available = True
-    frame_id = 0
-    start_cond = True
-    end_cond = True
-    while frames_available and end_cond:
-        retval, frame_bgr = cap.read()
-        # Comprobar si hay rango, y en ese caso, si el frame que se ha leído está en el rango.
-        start_cond = frame_start is None or (frame_start is not None and frame_start <= frame_id)
-        end_cond = frame_end is None or (frame_end is not None and frame_id < frame_end)
-        range_cond = start_cond and end_cond
-        # Comprobar si se cargó el frame siguiente.
-        if retval:
-            # Comprobar que el frame está en el rango.
-            if range_cond:
-                # Convertir a RGB.
-                frame_rgb = cv2.cvtColor(frame_bgr, cv2.COLOR_BGR2RGB)
-                # Guardar el frame.
-                frames.append(frame_rgb)
-                # Añadir el timestamp correspondiente a este frame.
-                timestamps.append(int(cap.get(cv2.CAP_PROP_POS_MSEC)))
-            # Pasar al siguiente frame id.
-            frame_id += 1
-        else:
-            frames_available = False
-    cap.release()
-    return int(width), int(height), frames_per_second, frames, timestamps
+    raise Exception('Deprecated. Use simple_object_detection.utils.video.Sequence class instead.')
 
 
-def change_frame_rate_sequence(sequence: List[Image],
-                               fps: float,
-                               new_frame_rate: float) -> List[Image]:
-    sequence_frames = len(sequence)
-    sequence_duration = sequence_frames / fps
-    sequence_new_frames = int(sequence_duration * new_frame_rate)
-    frame_step = sequence_frames / (sequence_duration * new_frame_rate)
-    new_sequence: List[Image] = list()
-    for frame_index in range(sequence_new_frames):
-        new_frame_index = int(frame_step * frame_index)
-        # Asegurar que no salta fuera de la secuencia original.
-        if new_frame_index < sequence_frames:
-            new_sequence.append(sequence[new_frame_index])
-    return new_sequence
-
-
-def save_sequence(sequence: List[Image],
-                  frame_width: int,
-                  frame_height: int,
-                  frames_per_second: float,
-                  file_output: str,
-                  resize_factor: float = 1,
-                  new_frame_rate: float = None) -> None:
+def save_sequence(sequence: Sequence, file_output: str) -> None:
     """Guarda una secuencia de frames como un vídeo.
 
-    TODO: ¿Cómo plantear para que se vaya guardando poco a poco?
-
     :param sequence: secuencia de frames.
-    :param frame_width: anchura de los frames.
-    :param frame_height: altura de los frames.
-    :param frames_per_second: frames por segundo.
     :param file_output: archivo donde se guardará (sobreescribe si ya existe).
-    :param resize_factor: la salida tendrá un tamaño redimensionado por el factor indicado.
-    :param new_frame_rate: nueva tasa de frames por segundo (tiene que ser menor que la tasa original).
     """
     # Redimensionar el frame si es necseario.
-    frame_width = int(frame_width * resize_factor)
-    frame_height = int(frame_height * resize_factor)
-    # Cáculo del nuevo frame rate.
-    if new_frame_rate is not None:
-        sequence = change_frame_rate_sequence(sequence, frames_per_second, new_frame_rate)
-        frames_per_second = new_frame_rate
+    frame_width = sequence.width
+    frame_height = sequence.height
     # Cargar codec y video de salida.
     fourcc = cv2.VideoWriter_fourcc(*'DIVX')
-    out = cv2.VideoWriter(file_output, fourcc, frames_per_second, (frame_width, frame_height))
-    # Procesar cada frame de la secuencia.
+    out = cv2.VideoWriter(file_output, fourcc, sequence.fps, (frame_width, frame_height))
+    # Guardar cada frame de la secuencia.
     for frame in sequence:
         frame = cv2.cvtColor(frame, cv2.COLOR_RGB2BGR)
-        if resize_factor != 1:
-            frame = cv2.resize(frame, (frame_width, frame_height))
         out.write(frame)
     out.release()
 
 
-def generate_detections_in_sequence(network: Model, sequence: List[Image],
-                                    mask: Image = None) -> List[List[Object]]:
-    """Genera las detecciones de objetos en cada frame.
+def generate_objects_detections(network: Model,
+                                sequence: Sequence,
+                                mask: Image = None) -> List[List[Object]]:
+    """Genera las detecciones de objetos en cada frame de una secuencia de vídeo.
 
     :param network: red utilizada para la detección de objetos.
     :param sequence: video donde extraer los frames.
@@ -213,22 +144,19 @@ def generate_detections_in_sequence(network: Model, sequence: List[Image],
     return objects_per_frame
 
 
-def save_detections_in_sequence(network: Model, sequence: List[Image], file_output: str,
-                                mask: Image = None) -> None:
-    """Guarda las detecciones realizadas en una secuencia.
+def save_objects_detections(objects_detections: List[List[Object]], file_output: str) -> None:
+    """Guarda las detecciones de objetos en una secuencia.
 
-    :param network: red utilizada para la detección de objetos.
-    :param sequence: video donde extraer los frames.
+    Si el archivo existe, lo sobreescribe.
+
+    :param objects_detections: red utilizada para la detección de objetos.
     :param file_output: archivo donde se guardará la lista de detecciones en cada frame.
-    :param mask: máscara para aplicar la zona donde se realizará la detección en la secuencia.
     """
-    objects_per_frame = generate_detections_in_sequence(network, sequence, mask)
-    # Guardar las detecciones
-    with open(file_output, 'wb') as output:  # Overwrites any existing file.
-        pickle.dump(objects_per_frame, output, pickle.HIGHEST_PROTOCOL)
+    with open(file_output, 'wb') as output:
+        pickle.dump(objects_detections, output, pickle.HIGHEST_PROTOCOL)
 
 
-def load_detections_in_sequence(file_path: str) -> List[Object]:
+def load_object_detections(file_path: str) -> List[Object]:
     """Carga las detecciones guardadas en una archivo.
 
     :param file_path: dirección al archivo.
@@ -236,35 +164,3 @@ def load_detections_in_sequence(file_path: str) -> List[Object]:
     """
     with open(file_path, 'rb') as file:
         return pickle.load(file)
-
-
-def load_sequence_by_frames(frames_files: List[str],
-                            fps: float,
-                            width: int = None,
-                            height: int = None) -> SequenceLoaded:
-    """
-    Carga una lista de imágenes dada la dirección del archivo y genera una secuencia de vídeo.
-
-    Calcula la duración de la secuencia con: duración = frames / fps.
-
-    Calcula el tiempo interpolando.
-    :param frames_files: direcciones de los archivos a las frames (ordenados).
-    :param fps: fotogramas por segundo.
-    :param width: ancho de la secuencia de video.
-    :param height: altura de la secuencia de video.
-    :return: (anchura, altura, nº de imágenes por segundo, secuencia, timestamps).
-    """
-    duration_ms: int = int((len(frames_files) / fps) * 1000)
-    ms_per_frame = duration_ms / len(frames_files)
-    timestamps: List[int] = [int(i*ms_per_frame) for i in range(len(frames_files))]
-    frames: List[Image] = list()
-    for frame_file in frames_files:
-        frames.append(load_image(frame_file))
-    # Calcular el ancho y alto dado el primer frame.
-    if width is None:
-        width = frames[0].shape[1]
-    if height is None:
-        height = frames[0].shape[0]
-
-    return width, height, fps, frames, timestamps
-
