@@ -1,3 +1,5 @@
+from typing import List
+
 import cv2
 
 from simple_object_detection.typing import Image
@@ -17,10 +19,13 @@ class Sequence:
         self.height: int = int(self.stream.get(cv2.CAP_PROP_FRAME_HEIGHT))
         self.fps: float = float(self.stream.get(cv2.CAP_PROP_FPS))
         self.num_frames: int = int(self.stream.get(cv2.CAP_PROP_FRAME_COUNT))
+        # Caching
+        self.cache: List[Image] = list()
 
     def __getitem__(self, item: int) -> Image:
         """
-        TODO: Cachear. Cargar chunk. Etc. Etc.
+        TODO: Cachear. Cargar chunk. Etc. Etc. Mostrar rendimiento haciendo caching.
+        https://medium.com/fintechexplained/advanced-python-how-to-implement-caching-in-python-application-9d0a4136b845
         TODO: Añadir slicing:
         https://www.geeksforgeeks.org/implementing-slicing-in-__getitem__/#:~:text=slice%20is%20a%20constructor%20in,can%20be%20defined%20inside%20it.&text=Parameter%3A,constructor%20to%20create%20slice%20object.
         """
@@ -32,7 +37,7 @@ class Sequence:
         retval, frame_bgr = self.stream.retrieve()
         # Comprobar el valor de salida.
         if not retval:
-            raise Exception('No se devolvió ningún frame.')
+            raise IndexError(f'El frame {item} está fuera del límite. Máximo {self.num_frames+1}.')
         frame_rgb = cv2.cvtColor(frame_bgr, cv2.COLOR_BGR2RGB)
         return frame_rgb
 
