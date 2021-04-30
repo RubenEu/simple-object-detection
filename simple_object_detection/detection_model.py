@@ -193,7 +193,7 @@ class PyTorchHubModel(DetectionModel, ABC):
                                    obj_id: int, *args, **kwargs) -> Tuple[Point2D, int, int]:
         xywh = output.xywh[0][obj_id]
         center, width, height = (int(xywh[0]), int(xywh[1])), int(xywh[2]), int(xywh[3])
-        return center, width, height
+        return Point2D(center[0], center[1]), width, height
 
     def _calculate_score(self, output: ModelOutput, obj_id: int, *args, **kwargs) -> float:
         return float(output.xywh[0][obj_id][4])
@@ -240,7 +240,7 @@ class TFHubModel(DetectionModel, ABC):
                                       ymax * im_height)
         center = int(left + (right - left) / 2), int(top + (bottom - top) / 2)
         width, height = int(right - left), int(bottom - top)
-        return center, width, height
+        return Point2D(center[0], center[1]), width, height
 
     def _calculate_score(self, output: ModelOutput, obj_id: int, *args, **kwargs) -> float:
         return float(output['detection_scores'][obj_id])

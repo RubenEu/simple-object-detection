@@ -1,5 +1,6 @@
 from typing import Tuple
-from simple_object_detection.typing import Point2D
+
+from simple_object_detection.typing import Point2D, BoundingBox
 
 
 class Object:
@@ -39,7 +40,7 @@ class Object:
         self._center = new_center
 
     @property
-    def bounding_box(self) -> Tuple[Point2D, Point2D, Point2D, Point2D]:
+    def bounding_box(self) -> BoundingBox:
         """Devuelve los 4 puntos de la caja delimitadora en el orden de las agujas del reloj
         comenzando en la esquina superior izquierda.
 
@@ -48,21 +49,29 @@ class Object:
         return self._bounding_box
 
     @bounding_box.setter
-    def bounding_box(self, new_bounding_box: Tuple[Point2D, Point2D, Point2D, Point2D]) -> None:
+    def bounding_box(self, new_bounding_box: BoundingBox) -> None:
         self._bounding_box = new_bounding_box
 
     @staticmethod
-    def _create_bounding_box(center, width, height):
+    def _create_bounding_box(center: Point2D, width: int, height: int) -> BoundingBox:
         """Calcula los puntos de la caja delimitadora dado el centro, ancho y alto.
 
         La caja calculada es paralela a los ejes X e Y.
 
+        :param center: punto del centro de la caja.
+        :param width: ancho.
+        :param height: altura.
         :return: caja delimitadora.
         """
         center_x, center_y = center
         x_left, x_right = int(center_x - (width / 2)), int(center_x + (width / 2))
         y_top, y_bottom = int(center_y - (height / 2)), int(center_y + (height / 2))
-        return (x_left, y_top), (x_right, y_top), (x_right, y_bottom), (x_left, y_bottom)
+        return BoundingBox(
+            Point2D(x_left, y_top),
+            Point2D(x_right, y_top),
+            Point2D(x_right, y_bottom),
+            Point2D(x_left, y_bottom)
+        )
 
     def __str__(self):
         return f'ObjectDetected<center={self.center}, class={self.label}, score={self.score}>'
