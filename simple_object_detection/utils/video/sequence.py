@@ -17,8 +17,8 @@ class Sequence:
         # Información del vídeo.
         self.width: int = int(self.stream.get(cv2.CAP_PROP_FRAME_WIDTH))
         self.height: int = int(self.stream.get(cv2.CAP_PROP_FRAME_HEIGHT))
-        self.fps: float = float(self.stream.get(cv2.CAP_PROP_FPS))
-        self.num_frames: int = int(self.stream.get(cv2.CAP_PROP_FRAME_COUNT))
+        self._fps: float = float(self.stream.get(cv2.CAP_PROP_FPS))
+        self._num_frames: int = int(self.stream.get(cv2.CAP_PROP_FRAME_COUNT))
         # Caching (Almacena el número del frame y la imagen).
         self._cache: List[Tuple[int, Image]] = [(..., ...)] * cache_size
 
@@ -32,6 +32,7 @@ class Sequence:
         # Comprobación del ítem.
         if not isinstance(item, int):
             raise TypeError()
+        print(self.stream.get(cv2.CAP_PROP_POS_FRAMES))
         # Extraer el frame buscado.
         frame_bgr = self._get_frame(item)
         # Comprobar el valor de salida.
@@ -66,18 +67,19 @@ class Sequence:
             return frame
         return None
 
-    def _pull_to_cache(self, fid) -> Image:
+    def _pull_to_cache(self, fid: int) -> Image:
         """Trae a caché los siguientes frames y devuelve el buscado.
 
         :return:
         """
         # Establecer en el frame que se busca.
-        retval = self.stream.set(cv2.CAP_PROP_POS_FRAMES, fid)
+        retval = self.stream.set(cv2.CAP_PROP_POS_FRAMES, float(fid))
         if not retval:
             raise Exception('Ocurrió un error al posicionar el número de frame.')
+        # Iterar mientras haya frames disponibles.from
+        actual_frame_id = fid
         # Añadir los siguientes frames que quepan la caché.
-        num_frames_pulled = 0
-        while True:
+        while actual_frame_id < self.num_frames:
             # Capturar frame a frame.
             actual_frame_id = int(self.stream.get(cv2.CAP_PROP_POS_FRAMES))
             ret, frame = self.stream.read()
@@ -85,8 +87,11 @@ class Sequence:
             if not ret:
                 # TODO: Aquí a veces lanza error de que no se ha recibido.
                 #  Cuando sí debería recibirse.
-                print(f"No se ha recibido el frame {actual_frame_id} (¿stream finalizado?)."
-                      f"Saliendo...")
+                # TODO: Ver cuántos fps tiene el vídeo y cuántos se leen aquí.
+                #  igual eso es todo el error.
+                #  Además, manejar si hay 153 frames y se está buscando el 154, que ya no se pid
+                #  más.
+                # o que ese sea el final...
                 break
             # Añadir a la caché
             self._cache[actual_frame_id % len(self._cache)] = (actual_frame_id, frame)
@@ -115,3 +120,18 @@ class Sequence:
             raise Exception(f'The {video_path} can\'t be opened or doesn\'t exists.')
         return cap
 
+    @property
+    def fps(self):
+        return self._fps
+
+    @fps.setter
+    def fps(self, value: float):
+        self._fps = value
+
+    @property
+    def num_frames(self):
+        return self._num_frames
+
+    @num_frames.setter
+    def num_frames(self, value: int):
+        self._num_frames = value
