@@ -200,6 +200,10 @@ class StreamSequence:
     def num_frames_available(self, value: int):
         self._num_frames_available = value
 
+    @property
+    def num_frames(self):
+        return self._end_frame - self._start_frame + 1
+
 
 def load_sequence():
     raise DeprecationWarning('Use simple_object_detection.utils.video.StreamSequence class'
