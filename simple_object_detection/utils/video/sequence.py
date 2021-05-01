@@ -155,13 +155,6 @@ class StreamSequence:
             ret, frame = self.stream.read()
             # Comprobar si se ha leído el frame correctamente.
             if not ret:
-                # TODO: Aquí a veces lanza error de que no se ha recibido.
-                #  Cuando sí debería recibirse.
-                # TODO: Ver cuántos fps tiene el vídeo y cuántos se leen aquí.
-                #  igual eso es todo el error.
-                #  Además, manejar si hay 153 frames y se está buscando el 154, que ya no se pid
-                #  más.
-                # o que ese sea el final...
                 break
             # Añadir a la caché
             self._cache[actual_frame_id % len(self._cache)] = (actual_frame_id, frame)
@@ -194,14 +187,29 @@ class StreamSequence:
 
     @property
     def num_frames_available(self):
+        """Número de frames total disponibles en la secuencia.
+
+        :return: número de frames total disponible
+        """
         return self._num_frames_available
 
     @num_frames_available.setter
     def num_frames_available(self, value: int):
+        """Establecer el número de frames disponibles.
+
+        Utilizar úniacmente para labores de depuración.
+
+        :param value: cantidad de frames disponibles.
+        :return:
+        """
         self._num_frames_available = value
 
     @property
     def num_frames(self):
+        """Cálculo del número de frames teniendo en cuenta el frame inicial y final establecido.
+
+        :return: número de frames con los límites establecidos.
+        """
         return self._end_frame - self._start_frame + 1
 
 
