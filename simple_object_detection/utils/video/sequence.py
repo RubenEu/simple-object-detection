@@ -57,7 +57,7 @@ class StreamSequence:
         return frame_rgb
 
     def __len__(self):
-        return self.num_frames
+        return self.num_frames_available
 
     def set_start_frame(self, frame: int) -> None:
         """Establece el frame inicial.
@@ -115,7 +115,7 @@ class StreamSequence:
         :return:
         """
         # Comprobación del índice.
-        if fid >= self.num_frames:
+        if fid >= self.num_frames_available:
             raise IndexError('Se ha excedido el límite.')
         # Buscar en caché primero.
         cached = self._search_in_cache(fid)
@@ -149,7 +149,7 @@ class StreamSequence:
         # Iterar mientras haya frames disponibles.from
         actual_frame_id = fid
         # Añadir los siguientes frames que quepan la caché.
-        while actual_frame_id < self.num_frames:
+        while actual_frame_id < self.num_frames_available:
             # Capturar frame a frame.
             actual_frame_id = int(self.stream.get(cv2.CAP_PROP_POS_FRAMES))
             ret, frame = self.stream.read()
@@ -193,11 +193,11 @@ class StreamSequence:
         self._fps = value
 
     @property
-    def num_frames(self):
+    def num_frames_available(self):
         return self._num_frames_available
 
-    @num_frames.setter
-    def num_frames(self, value: int):
+    @num_frames_available.setter
+    def num_frames_available(self, value: int):
         self._num_frames_available = value
 
 
