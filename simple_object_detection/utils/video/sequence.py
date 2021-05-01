@@ -12,6 +12,7 @@ class StreamSequence:
     el vídeo poco a poco sin llegar a saturar la memoria RAM.
 
     TODO:
+    - Limitar el inicio del vídeo y el final. Así se puede 'acortar' un vídeo.
     - Ir marcando los que se han visto.
     - Crear un hilo que vaya trayendo los nuevos a memoria.
     - Etc. Etc. Optimizar esto!
