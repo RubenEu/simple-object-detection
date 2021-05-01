@@ -1,12 +1,9 @@
 import numpy as np
 
-from typing import List, Type, Any, TypeVar, Tuple, NamedTuple
+from typing import Union, Tuple, NamedTuple
 
-Model: Type = Any
-ModelOutput: Type = Any
-Image: Type = TypeVar('Image',
-                      Tuple[np.uint8, np.uint8, np.uint8],
-                      np.ndarray)
+
+Image = Union[Tuple[np.uint8, np.uint8, np.uint8], np.ndarray]
 
 
 class Point2D(NamedTuple):

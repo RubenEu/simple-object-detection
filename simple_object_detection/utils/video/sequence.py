@@ -1,4 +1,4 @@
-from typing import List, Tuple, Union, Optional
+from typing import List, Tuple, Optional
 
 import cv2
 
@@ -50,7 +50,7 @@ class StreamSequence:
     def _get_frame(self, fid: int) -> Image:
         """TODO: Documentar.
 
-        :param id:
+        :param fid:
         :return:
         """
         # Comprobación del índice.
@@ -65,11 +65,10 @@ class StreamSequence:
     def _search_in_cache(self, fid: int) -> Optional[Image]:
         """TODO: Documentar.
 
-        :param id:
+        :param fid:
         :return:
         """
         expected_index = fid % len(self._cache)
-        cached_item: Tuple[int, Image] = self._cache[expected_index]
         frame_id, frame = self._cache[expected_index]
         if frame_id == fid:
             return frame
@@ -148,7 +147,8 @@ class StreamSequence:
 
 
 def load_sequence():
-    raise DeprecationWarning('Use simple_object_detection.utils.video.StreamSequence class instead.')
+    raise DeprecationWarning('Use simple_object_detection.utils.video.StreamSequence class'
+                             'instead.')
 
 
 def save_sequence(sequence: StreamSequence, file_output: str) -> None:

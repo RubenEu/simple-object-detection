@@ -1,12 +1,12 @@
 import tempfile
+from abc import ABC, abstractmethod
+from typing import AnyStr, List, Any
+
 import tensorflow as tf
 import cv2
 
-from abc import ABC, abstractmethod
-from typing import AnyStr, List, Tuple
-
 from simple_object_detection.object import Object
-from simple_object_detection.typing import Model, ModelOutput, Image, Point2D
+from simple_object_detection.typing import Image, Point2D, RelativeBoundingBox
 from simple_object_detection.constants import COCO_NAMES
 
 
@@ -31,7 +31,7 @@ class DetectionModel(ABC):
             self.model = self._load_online()
         assert self.model is not None, 'The model is not loaded.'
 
-    def get_output(self, image: Image) -> ModelOutput:
+    def get_output(self, image: Image) -> Any:
         """
         Devuelve la salida de la red neuronal.
 
@@ -40,10 +40,7 @@ class DetectionModel(ABC):
         """
         return self._get_output(image)
 
-    def get_objects(self,
-                    image: Image,
-                    output: ModelOutput = None,
-                    mask: Image = None) -> List[Object]:
+    def get_objects(self, image: Image, output: Any = None, mask: Image = None) -> List[Object]:
         """
         Devuelve todos los objetos que se extraen de la salida de la predicción de la red neuronal.
 
@@ -64,7 +61,7 @@ class DetectionModel(ABC):
             output = self._get_output(image)
         return self._get_objects(image, output)
 
-    def _get_objects(self, image: Image, output: ModelOutput) -> List[Object]:
+    def _get_objects(self, image: Image, output: Any) -> List[Object]:
         """
         Realiza la extracción de todos los objetos que se encuentran en la salida de la red neuronal
         pasada por parámetro.
@@ -93,11 +90,11 @@ class DetectionModel(ABC):
         return objects
 
     @abstractmethod
-    def _load_local(self) -> Model:
+    def _load_local(self) -> Any:
         ...
 
     @abstractmethod
-    def _load_online(self) -> Model:
+    def _load_online(self) -> Any:
         """
         Método que debe ser implementado para cargar la red de manera online, es decir, sin uso de
         archivos locales.
@@ -107,7 +104,7 @@ class DetectionModel(ABC):
         ...
 
     @abstractmethod
-    def _get_output(self, image: Image) -> ModelOutput:
+    def _get_output(self, image: Image) -> Any:
         """
         Método que debe ser implementado. Debe devolver la salida del modelo que se esté
         implementando. Será introducido por parámetro en los métodos de cálculo de la información
@@ -119,7 +116,7 @@ class DetectionModel(ABC):
         ...
 
     @abstractmethod
-    def _calculate_number_detections(self, output: ModelOutput, *args, **kwargs) -> int:
+    def _calculate_number_detections(self, output: Any, *args, **kwargs) -> int:
         """
         Calcula el número de detecciones obtenidas en la predicción de la red.
 
@@ -132,10 +129,10 @@ class DetectionModel(ABC):
 
     @abstractmethod
     def _calculate_object_position(self,
-                                   output: Model,
+                                   output: Any,
                                    obj_id: int,
                                    *args,
-                                   **kwargs) -> Tuple[Point2D, int, int]:
+                                   **kwargs) -> RelativeBoundingBox:
         """
         Calcula la posición relativa del objeto en la imagen.
 
@@ -151,7 +148,7 @@ class DetectionModel(ABC):
         ...
 
     @abstractmethod
-    def _calculate_score(self, output: ModelOutput, obj_id: int, *args, **kwargs) -> float:
+    def _calculate_score(self, output: Any, obj_id: int, *args, **kwargs) -> float:
         """
         Calcula la puntuación del objeto detectado por la red.
 
@@ -166,7 +163,7 @@ class DetectionModel(ABC):
         ...
 
     @abstractmethod
-    def _calculate_label(self, output: ModelOutput, obj_id: int, *args, **kwargs) -> str:
+    def _calculate_label(self, output: Any, obj_id: int, *args, **kwargs) -> str:
         """
         Calcula cuál es la etiqueta (clase) del objeto.
 
@@ -186,19 +183,22 @@ class PyTorchHubModel(DetectionModel, ABC):
     Clase abstracta para los modelos extraídos de torch-hub.
     """
 
-    def _calculate_number_detections(self, output: ModelOutput, *args, **kwargs) -> int:
+    def _calculate_number_detections(self, output: Any, *args, **kwargs) -> int:
         return len(output.xyxy[0])
 
-    def _calculate_object_position(self, output: Model,
-                                   obj_id: int, *args, **kwargs) -> Tuple[Point2D, int, int]:
+    def _calculate_object_position(self,
+                                   output: Any,
+                                   obj_id: int,
+                                   *args,
+                                   **kwargs) -> RelativeBoundingBox:
         xywh = output.xywh[0][obj_id]
         center, width, height = (int(xywh[0]), int(xywh[1])), int(xywh[2]), int(xywh[3])
-        return Point2D(center[0], center[1]), width, height
+        return RelativeBoundingBox(Point2D(center[0], center[1]), width, height)
 
-    def _calculate_score(self, output: ModelOutput, obj_id: int, *args, **kwargs) -> float:
+    def _calculate_score(self, output: Any, obj_id: int, *args, **kwargs) -> float:
         return float(output.xywh[0][obj_id][4])
 
-    def _calculate_label(self, output: ModelOutput, obj_id: int, *args, **kwargs) -> str:
+    def _calculate_label(self, output: Any, obj_id: int, *args, **kwargs) -> str:
         class_id = int(output.xywh[0][obj_id][5])
         return COCO_NAMES[class_id]
 
@@ -229,21 +229,21 @@ class TFHubModel(DetectionModel, ABC):
         output = self.model(input_pattern)
         return output
 
-    def _calculate_number_detections(self, output: ModelOutput, *args, **kwargs) -> int:
+    def _calculate_number_detections(self, output: Any, *args, **kwargs) -> int:
         return output['detection_boxes'].shape[0]
 
-    def _calculate_object_position(self, output: Model,
-                                   obj_id: int, *args, **kwargs) -> Tuple[Point2D, int, int]:
+    def _calculate_object_position(self, output: Any,
+                                   obj_id: int, *args, **kwargs) -> RelativeBoundingBox:
         im_height, im_width = kwargs['image'].shape[0:2]
         ymin, xmin, ymax, xmax = output['detection_boxes'][obj_id].numpy()
         (left, right, top, bottom) = (xmin * im_width, xmax * im_width, ymin * im_height,
                                       ymax * im_height)
         center = int(left + (right - left) / 2), int(top + (bottom - top) / 2)
         width, height = int(right - left), int(bottom - top)
-        return Point2D(center[0], center[1]), width, height
+        return RelativeBoundingBox(Point2D(center[0], center[1]), width, height)
 
-    def _calculate_score(self, output: ModelOutput, obj_id: int, *args, **kwargs) -> float:
+    def _calculate_score(self, output: Any, obj_id: int, *args, **kwargs) -> float:
         return float(output['detection_scores'][obj_id])
 
-    def _calculate_label(self, output: ModelOutput, obj_id: int, *args, **kwargs) -> str:
+    def _calculate_label(self, output: Any, obj_id: int, *args, **kwargs) -> str:
         return output['detection_class_entities'][obj_id].numpy().decode()

@@ -1,5 +1,3 @@
-from typing import Tuple
-
 from simple_object_detection.typing import Point2D, BoundingBox
 
 

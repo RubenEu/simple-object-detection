@@ -1,14 +1,14 @@
 import numpy as np
 import pickle
 
-from typing import List
+from typing import List, Any
 
-from simple_object_detection.typing import Image, Model
+from simple_object_detection.typing import Image
 from simple_object_detection.object import Object
 from simple_object_detection.utils.video import StreamSequence
 
 
-def generate_objects_detections(network: Model,
+def generate_objects_detections(network: Any,
                                 sequence: StreamSequence,
                                 mask: Image = None) -> List[List[Object]]:
     """Genera las detecciones de objetos en cada frame de una secuencia de vídeo.
@@ -60,7 +60,8 @@ def filter_objects_by_min_score(objects: List[Object], min_score: float) -> List
     return list(filter(lambda obj: obj.score >= min_score, objects))
 
 
-def filter_objects_avoiding_duplicated(objects: List[Object], max_distance: int = 20) -> List[Object]:
+def filter_objects_avoiding_duplicated(objects: List[Object],
+                                       max_distance: int = 20) -> List[Object]:
     # Lista de las posiciones en 'objects' de los objetos eliminados.
     removed_objects_id = list()
     # Buscar los posibles candidatos para cada objeto.
