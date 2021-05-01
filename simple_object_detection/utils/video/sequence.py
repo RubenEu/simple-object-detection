@@ -25,12 +25,12 @@ class StreamSequence:
         self.width: int = int(self.stream.get(cv2.CAP_PROP_FRAME_WIDTH))
         self.height: int = int(self.stream.get(cv2.CAP_PROP_FRAME_HEIGHT))
         self._fps: float = float(self.stream.get(cv2.CAP_PROP_FPS))
-        self._num_frames: int = int(self.stream.get(cv2.CAP_PROP_FRAME_COUNT))
+        self._num_frames_available: int = int(self.stream.get(cv2.CAP_PROP_FRAME_COUNT))
         # Caching (Almacena el número del frame y la imagen).
         self._cache: List[Tuple[int, Image]] = [(..., ...)] * cache_size
         # Inicio y fin del vídeo.
         self._start_frame = 0
-        self._end_frame = self._num_frames - 1
+        self._end_frame = self._num_frames_available - 1
 
     def __del__(self):
         """Libera el recurso del vídeo cargado y elimina el objeto también.
@@ -85,7 +85,7 @@ class StreamSequence:
         :param frame: frame final.
         :return: None.
         """
-        if frame >= self._num_frames:
+        if frame >= self._num_frames_available:
             raise SimpleObjectDetectionException('No se puede establecer un frame final superior o'
                                                  'igual a la cantidad de frames disponibles.')
         elif frame <= self._start_frame:
@@ -194,11 +194,11 @@ class StreamSequence:
 
     @property
     def num_frames(self):
-        return self._num_frames
+        return self._num_frames_available
 
     @num_frames.setter
     def num_frames(self, value: int):
-        self._num_frames = value
+        self._num_frames_available = value
 
 
 def load_sequence():
