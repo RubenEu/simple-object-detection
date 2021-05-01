@@ -2,6 +2,7 @@ from typing import List, Tuple, Optional
 
 import cv2
 
+from simple_object_detection.exceptions import SimpleObjectDetectionException
 from simple_object_detection.typing import Image
 
 
@@ -12,7 +13,6 @@ class StreamSequence:
     el vídeo poco a poco sin llegar a saturar la memoria RAM.
 
     TODO:
-    - Limitar el inicio del vídeo y el final. Así se puede 'acortar' un vídeo.
     - Ir marcando los que se han visto.
     - Crear un hilo que vaya trayendo los nuevos a memoria.
     - Etc. Etc. Optimizar esto!
@@ -28,6 +28,15 @@ class StreamSequence:
         self._num_frames: int = int(self.stream.get(cv2.CAP_PROP_FRAME_COUNT))
         # Caching (Almacena el número del frame y la imagen).
         self._cache: List[Tuple[int, Image]] = [(..., ...)] * cache_size
+        # Inicio y fin del vídeo.
+        self._start_frame = 0
+        self._end_frame = self._num_frames - 1
+
+    def __del__(self):
+        """Libera el recurso del vídeo cargado y elimina el objeto también.
+        """
+        self.stream.release()
+        del self.stream
 
     def __getitem__(self, item: int) -> Image:
         """
@@ -39,14 +48,65 @@ class StreamSequence:
         # Comprobación del ítem.
         if not isinstance(item, int):
             raise TypeError()
+        # Calcular el índice del frame.
+        fid = self._calculate_frame_index(item)
         # Extraer el frame buscado.
-        frame_bgr = self._get_frame(item)
+        frame_bgr = self._get_frame(fid)
         # Comprobar el valor de salida.
         frame_rgb = cv2.cvtColor(frame_bgr, cv2.COLOR_BGR2RGB)
         return frame_rgb
 
     def __len__(self):
         return self.num_frames
+
+    def set_start_frame(self, frame: int) -> None:
+        """Establece el frame inicial.
+
+        Realiza la comprobación de que sea superior a 0 y que no sea superior o igual al frame
+        final.
+
+        :param frame: frame inicial.
+        :return: None.
+        """
+        if frame < 0:
+            raise SimpleObjectDetectionException('No se puede establecer un frame inicial inferior'
+                                                 'a 0.')
+        elif frame >= self._end_frame:
+            raise SimpleObjectDetectionException('No se puede establecer un frame igual o superior'
+                                                 'al frame final.')
+        self._start_frame = frame
+
+    def set_end_frame(self, frame: int) -> None:
+        """Establece el frame final.
+
+        Realiza la comprobación de que no sea superior o igual a la cantidad de frames disponibles.
+        Además comprueba también que no sea inferior o igual al frame inicial.
+
+        :param frame: frame final.
+        :return: None.
+        """
+        if frame >= self._num_frames:
+            raise SimpleObjectDetectionException('No se puede establecer un frame final superior o'
+                                                 'igual a la cantidad de frames disponibles.')
+        elif frame <= self._start_frame:
+            raise SimpleObjectDetectionException('No se puede establecer un frame final menor o'
+                                                 'igual que el frame inicial.')
+        self._end_frame = frame
+
+    def _calculate_frame_index(self, fid: int):
+        """Si se ha establecido un límite inferior o superior distinto, recalcula.
+
+        Comprueba que el índice está entre 0 y el número de frames disponibles.
+
+        :param fid:
+        :return: índice calculado del frame.
+        """
+        calculated_fid = self._start_frame + fid
+        # Comprobar que está en el intervalo especificado.
+        if not self._start_frame <= calculated_fid <= self._end_frame:
+            raise IndexError(f'El frame {calculated_fid} está fuera del intervalo'
+                             f'[{self._start_frame}, {self._end_frame}].')
+        return calculated_fid
 
     def _get_frame(self, fid: int) -> Image:
         """TODO: Documentar.
@@ -110,12 +170,6 @@ class StreamSequence:
                 break
         # Devolver el frame que se buscaba.
         return self._cache[fid % len(self._cache)][1]
-
-    def __del__(self):
-        """Libera el recurso del vídeo cargado y elimina el objeto también.
-        """
-        self.stream.release()
-        del self.stream
 
     @staticmethod
     def _open_video_stream(video_path: str) -> cv2.VideoCapture:
