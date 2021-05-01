@@ -8,8 +8,11 @@ Parámetros:
 
 TODO:
   - En un futuro, poner la máscara como opcional.
+  - Añadir logging
+  - Tiempo de ejecución.
 """
 import sys
+import logging
 from importlib import import_module
 
 from simple_object_detection.utils import (load_image,
@@ -29,7 +32,7 @@ network_class_name = sys.argv[4].split('.')
 network_class = getattr(import_module('.'.join(network_class_name[:-1])), network_class_name[-1])
 network = network_class()
 # Cargar la secuencia
-sequence = StreamSequence(video_path, cache_size=200)
+sequence = StreamSequence(video_path, cache_size=500)
 # Generar y guardar las detecciones.
 object_detections = generate_objects_detections(network, sequence, mask)
 save_objects_detections(object_detections, file_output)
