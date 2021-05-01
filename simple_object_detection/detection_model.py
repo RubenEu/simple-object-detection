@@ -91,41 +91,39 @@ class DetectionModel(ABC):
 
     @abstractmethod
     def _load_local(self) -> Any:
-        ...
-
-    @abstractmethod
-    def _load_online(self) -> Any:
-        """
-        Método que debe ser implementado para cargar la red de manera online, es decir, sin uso de
+        """Método que debe ser implementado para cargar la red de manera offline. Es decir, con
         archivos locales.
 
         :return: modelo.
         """
-        ...
+
+    @abstractmethod
+    def _load_online(self) -> Any:
+        """Método que debe ser implementado para cargar la red de manera online, es decir, sin uso
+        de archivos locales.
+
+        :return: modelo.
+        """
 
     @abstractmethod
     def _get_output(self, image: Image) -> Any:
-        """
-        Método que debe ser implementado. Debe devolver la salida del modelo que se esté
+        """Método que debe ser implementado. Debe devolver la salida del modelo que se esté
         implementando. Será introducido por parámetro en los métodos de cálculo de la información
         necesaria para la obtención de los objetos.
 
         :param image: imagen.
         :return: salida de la red neuronal para la imagen dada.
         """
-        ...
 
     @abstractmethod
     def _calculate_number_detections(self, output: Any, *args, **kwargs) -> int:
-        """
-        Calcula el número de detecciones obtenidas en la predicción de la red.
+        """Calcula el número de detecciones obtenidas en la predicción de la red.
 
         :param output: salida de la red neuronal.
         :param args: argumentos extra que pueden ser necesarios en la implementación del modelo.
         :param kwargs: argumentos extra que pueden ser necesarios en la implementación del modelo.
         :return: cantidad de objetos detectados.
         """
-        ...
 
     @abstractmethod
     def _calculate_object_position(self,
@@ -133,8 +131,7 @@ class DetectionModel(ABC):
                                    obj_id: int,
                                    *args,
                                    **kwargs) -> RelativeBoundingBox:
-        """
-        Calcula la posición relativa del objeto en la imagen.
+        """Calcula la posición relativa del objeto en la imagen.
 
         Este método debe ser implementado y devolver una tupla con el centro en la primera posición,
         y el ancho y alto respectivamente en las dos siguientes posiciones.
@@ -145,12 +142,10 @@ class DetectionModel(ABC):
         :param kwargs: argumentos extra que pueden ser necesarios en la implementación del modelo.
         :return: centro del objeto, ancho de la caja delimitadora, alto de la caja delimitadora.
         """
-        ...
 
     @abstractmethod
     def _calculate_score(self, output: Any, obj_id: int, *args, **kwargs) -> float:
-        """
-        Calcula la puntuación del objeto detectado por la red.
+        """Calcula la puntuación del objeto detectado por la red.
 
         Este método debe ser implementado y devolver la puntuación que ha obtenido el objeto.
 
@@ -160,12 +155,10 @@ class DetectionModel(ABC):
         :param kwargs: argumentos extra que pueden ser necesarios en la implementación del modelo.
         :return: puntuación que ha obtenido el objeto.
         """
-        ...
 
     @abstractmethod
     def _calculate_label(self, output: Any, obj_id: int, *args, **kwargs) -> str:
-        """
-        Calcula cuál es la etiqueta (clase) del objeto.
+        """Calcula cuál es la etiqueta (clase) del objeto.
 
         Este método debe ser implementado y devolver el nombre de la clase a la que pertenece.
 
@@ -175,12 +168,10 @@ class DetectionModel(ABC):
         :param kwargs: argumentos extra que pueden ser necesarios en la implementación del modelo.
         :return: clase a la que pertenece el objeto.
         """
-        ...
 
 
 class PyTorchHubModel(DetectionModel, ABC):
-    """
-    Clase abstracta para los modelos extraídos de torch-hub.
+    """Clase abstracta para los modelos extraídos de torch-hub.
     """
 
     def _calculate_number_detections(self, output: Any, *args, **kwargs) -> int:
@@ -204,8 +195,7 @@ class PyTorchHubModel(DetectionModel, ABC):
 
 
 class TFHubModel(DetectionModel, ABC):
-    """
-    Clase abstracta común para los modelos extraídos de tensorflow hub.
+    """Clase abstracta común para los modelos extraídos de tensorflow hub.
 
     Los modelos para las redes implementadas con esta clase se pueden encontrar en:
         - https://tfhub.dev/s?module-type=image-object-detection
