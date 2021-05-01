@@ -32,7 +32,7 @@ class StreamSequence:
         self._start_frame = 0
         self._end_frame = self._num_frames_available - 1
 
-    def __del__(self):
+    def __del__(self) -> None:
         """Libera el recurso del vídeo cargado y elimina el objeto también.
         """
         self.stream.release()
@@ -56,7 +56,7 @@ class StreamSequence:
         frame_rgb = cv2.cvtColor(frame_bgr, cv2.COLOR_BGR2RGB)
         return frame_rgb
 
-    def __len__(self):
+    def __len__(self) -> int:
         return self.num_frames_available
 
     def set_start_frame(self, frame: int) -> None:
@@ -93,7 +93,7 @@ class StreamSequence:
                                                  'igual que el frame inicial.')
         self._end_frame = frame
 
-    def _calculate_frame_index(self, fid: int):
+    def _calculate_frame_index(self, fid: int) -> int:
         """Si se ha establecido un límite inferior o superior distinto, recalcula.
 
         Comprueba que el índice está entre 0 y el número de frames disponibles.
@@ -178,15 +178,15 @@ class StreamSequence:
         return cap
 
     @property
-    def fps(self):
+    def fps(self) -> float:
         return self._fps
 
     @fps.setter
-    def fps(self, value: float):
+    def fps(self, value: float) -> None:
         self._fps = value
 
     @property
-    def num_frames_available(self):
+    def num_frames_available(self) -> int:
         """Número de frames total disponibles en la secuencia.
 
         :return: número de frames total disponible
@@ -194,7 +194,7 @@ class StreamSequence:
         return self._num_frames_available
 
     @num_frames_available.setter
-    def num_frames_available(self, value: int):
+    def num_frames_available(self, value: int) -> None:
         """Establecer el número de frames disponibles.
 
         Utilizar úniacmente para labores de depuración.
@@ -205,13 +205,21 @@ class StreamSequence:
         self._num_frames_available = value
 
     @property
-    def num_frames(self):
+    def num_frames(self) -> int:
         """Cálculo del número de frames teniendo en cuenta el frame inicial y final establecido.
 
         :return: número de frames con los límites establecidos.
         """
         return self._end_frame - self._start_frame + 1
 
+
+class StreamSequenceWriter:
+    """Clase para la escritura de una secuencia de imágenes en un archivo de vídeo.
+    """
+    def release(self) -> None:
+        """Cierra la conexión con el archivo.
+        """
+        # TODO
 
 def load_sequence():
     raise DeprecationWarning('Use simple_object_detection.utils.video.StreamSequence class'
