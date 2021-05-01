@@ -1,2 +1,2 @@
 class SimpleObjectDetectionException(Exception):
-    """Base class for exceptions."""
+    """Clase base para las excepciones."""

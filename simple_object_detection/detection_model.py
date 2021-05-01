@@ -13,7 +13,7 @@ from simple_object_detection.constants import COCO_NAMES
 class DetectionModel(ABC):
     """
     Clase abstracta para implementar los modelos de redes neuronales que realizan detección de
-    bjetos.
+    objetos.
     """
     # Carpeta donde se almacenan los modelos locales.
     models_path: str = None
