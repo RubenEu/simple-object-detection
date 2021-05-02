@@ -17,6 +17,7 @@ class StreamSequence:
     - Crear un hilo que vaya trayendo los nuevos a memoria.
     - Etc. Etc. Optimizar esto!
     - Implementar __iter__. (PEP 234)
+    - Configuración de espacio de color (RGB actualmente).
     """
     def __init__(self, video_path: str, cache_size: int = 100):
         # Abrir el stream con OpenCV.
@@ -118,10 +119,15 @@ class StreamSequence:
         return calculated_fid
 
     def _get_frame(self, fid: int) -> Image:
-        """TODO: Documentar.
+        """Extrae el frame fid-ésimo de la secuencia de vídeo.
 
-        :param fid:
-        :return:
+        Primeramente busca si está en caché, si lo encuentra, lo devuelve.
+
+        Si se produce un *miss*, trae a caché el tamaño de bloque epecificado por ``cache_size`` y
+        devuelve el frame buscado.
+
+        :param fid: número del frame.
+        :return: frame.
         """
         # Comprobación del índice.
         if fid >= self.num_frames_available:
@@ -133,10 +139,12 @@ class StreamSequence:
         return cached
 
     def _search_in_cache(self, fid: int) -> Optional[Image]:
-        """TODO: Documentar.
+        """Busca en la caché el frame especificado.
 
-        :param fid:
-        :return:
+        Si no lo encuentra, devuelve None.
+
+        :param fid: número del frame.
+        :return: frame buscado si es encontrado, si no, None.
         """
         expected_index = fid % len(self._cache)
         frame_id, frame = self._cache[expected_index]
@@ -145,11 +153,11 @@ class StreamSequence:
         return None
 
     def _pull_to_cache(self, fid: int) -> Image:
-        """Trae a caché los siguientes frames y devuelve el buscado.
+        """Trae a caché el lote de frames donde se encuentra el frame fid-ésimo. Además, devuelve el
+        frame fid-ésimo.
 
-        TODO: Documentar.
-
-        :return:
+        :param fid: número del frame para traer a caché.
+        :return: frame fid-ésimo.
         """
         # Establecer en el frame que se busca.
         retval = self.stream.set(cv2.CAP_PROP_POS_FRAMES, float(fid))
@@ -188,15 +196,24 @@ class StreamSequence:
 
     @property
     def fps(self) -> float:
+        """Número de frames por segundo de la secuencia de vídeo."""
         return self._fps
 
     @fps.setter
     def fps(self, value: float) -> None:
+        """Modificar el número de frames por segundo de la secuencia de vídeo.
+
+        Utilizar únicamente para labores de depuración. Modificar este valor puede llevar a
+        comportamientos inesperados.
+
+        :param value: nuevo valor de fps.
+        :return: None.
+        """
         self._fps = value
 
     @property
     def num_frames_available(self) -> int:
-        """Número de frames total disponibles en la secuencia.
+        """Número de frames total disponibles en la secuencia de vídeo.
 
         :return: número de frames total disponible
         """
@@ -285,4 +302,3 @@ class StreamSequenceWriter:
         # Guardar todos los frames de la secuencia.
         for frame in sequence:
             output_stream.write(frame)
-
