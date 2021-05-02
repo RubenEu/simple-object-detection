@@ -39,14 +39,15 @@ def save_objects_detections(objects_detections: List[List[Object]], file_output:
         pickle.dump(objects_detections, output, pickle.HIGHEST_PROTOCOL)
 
 
-def load_object_detections(file_path: str) -> List[Object]:
+def load_objects_detections(file_path: str, encoding: str = 'ASCII') -> List[Object]:
     """Carga las detecciones guardadas en una archivo.
 
     :param file_path: dirección al archivo.
+    :param encoding: codificación del archivo.
     :return: lista de detecciones de objetos en cada frame.
     """
     with open(file_path, 'rb') as file:
-        return pickle.load(file)
+        return pickle.load(file, encoding=encoding)
 
 
 def filter_objects_by_classes(objects: List[Object], classes: List[str]) -> List[Object]:
