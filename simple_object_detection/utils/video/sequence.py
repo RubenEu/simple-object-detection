@@ -251,9 +251,9 @@ class StreamSequence:
 class StreamSequenceWriter:
     """Clase para la escritura de una secuencia de imágenes en un archivo de vídeo.
     """
-    def __init__(self, file_output: str, propierties: VideoProperties):
+    def __init__(self, file_output: str, properties: VideoProperties):
         fourcc = cv2.VideoWriter_fourcc(*'DIVX')
-        width, height, fps, _ = propierties
+        width, height, fps, _ = properties
         self._stream = cv2.VideoWriter(file_output, fourcc, fps, (width, height))
 
     def __del__(self):
