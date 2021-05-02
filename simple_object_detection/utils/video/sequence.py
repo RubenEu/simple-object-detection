@@ -3,7 +3,7 @@ from typing import List, Tuple, Optional
 import cv2
 
 from simple_object_detection.exceptions import SimpleObjectDetectionException
-from simple_object_detection.typing import Image
+from simple_object_detection.typing import Image, VideoPropierties
 
 
 class StreamSequence:
@@ -212,34 +212,59 @@ class StreamSequence:
         """
         return self._end_frame - self._start_frame + 1
 
+    def properties(self) -> VideoPropierties:
+        """Devuelve una tupla con las propiedades del vídeo.
+
+        La tupla tiene la estructura (width, height, fps, num_frames).
+
+        :return: propiedades del vídeo.
+        """
+        return VideoPropierties(self.width, self.height, self.fps, self.num_frames)
+
 
 class StreamSequenceWriter:
     """Clase para la escritura de una secuencia de imágenes en un archivo de vídeo.
     """
+    def __init__(self, file_output: str, propierties: VideoPropierties):
+        fourcc = cv2.VideoWriter_fourcc(*'DIVX')
+        fps, width, height, _ = propierties
+        self._stream = cv2.VideoWriter(file_output, fourcc, fps, (width, height))
+
+    def __del__(self):
+        """Cierra la conexión con el archivo y elimina la instancia del stream.
+        """
+        self.release()
+        del self._stream
+
+    def write(self, frame: Image) -> None:
+        """Escribe un frame al final de la secuencia de vídeo.
+
+        :param frame: imagen para escribir.
+        :return: None.
+        """
+
     def release(self) -> None:
         """Cierra la conexión con el archivo.
         """
-        # TODO
+        self._stream.release()
 
-def load_sequence():
-    raise DeprecationWarning('Use simple_object_detection.utils.video.StreamSequence class'
-                             'instead.')
+    @staticmethod
+    def save_sequence(sequence: StreamSequence,
+                      file_output: str,
+                      propierties: VideoPropierties = None) -> None:
+        """Guarda una secuencia de vídeo frame a frame en un archivo.
 
+        :param sequence: secuencia de vídeo.
+        :param file_output: archivo de salida.
+        :param propierties: propiedades del vídeo de salida. Si es None se obtienen de la secuencia
+        de entrada.
+        :return: None.
+        """
+        # Abrir el stream.
+        output_stream = StreamSequenceWriter(file_output)
+        # Si no se pasaron propiedades, obtenerlas de la secuencia
+        propierties = sequence.properties()
+        # Guardar todos los frames de la secuencia.
+        for frame in sequence:
+            output_stream.write(frame)
 
-def save_sequence(sequence: StreamSequence, file_output: str) -> None:
-    """Guarda una secuencia de frames como un vídeo.
-
-    TODO: Eliminar el método y en su lugar crear una clase wrapper para VideoWriter e ir
-     guardando el vídeo poco a poco.
-
-    :param sequence: secuencia de frames.
-    :param file_output: archivo donde se guardará (sobreescribe si ya existe).
-    """
-    # Cargar codec y video de salida.
-    fourcc = cv2.VideoWriter_fourcc(*'DIVX')
-    out = cv2.VideoWriter(file_output, fourcc, sequence.fps, (sequence.width, sequence.height))
-    # Guardar cada frame de la secuencia.
-    for frame in sequence:
-        frame = cv2.cvtColor(frame, cv2.COLOR_RGB2BGR)
-        out.write(frame)
-    out.release()

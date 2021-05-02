@@ -25,3 +25,10 @@ class RelativeBoundingBox(NamedTuple):
     center: Point2D
     width: int
     height: int
+
+
+class VideoPropierties(NamedTuple):
+    width: int
+    height: int
+    fps: float
+    num_frames: int
