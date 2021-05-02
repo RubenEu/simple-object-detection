@@ -3,7 +3,7 @@ from typing import List, Tuple, Optional
 import cv2
 
 from simple_object_detection.exceptions import SimpleObjectDetectionException
-from simple_object_detection.typing import Image, VideoPropierties
+from simple_object_detection.typing import Image, VideoProperties
 
 
 class StreamSequence:
@@ -57,7 +57,10 @@ class StreamSequence:
         return frame_rgb
 
     def __len__(self) -> int:
-        return self.num_frames_available
+        """Devuelve el número de frames de la secuencia (usando los limites establecidos o
+        iniciales)
+        """
+        return self.num_frames
 
     def set_start_frame(self, frame: int) -> None:
         """Establece el frame inicial.
@@ -212,22 +215,22 @@ class StreamSequence:
         """
         return self._end_frame - self._start_frame + 1
 
-    def properties(self) -> VideoPropierties:
+    def properties(self) -> VideoProperties:
         """Devuelve una tupla con las propiedades del vídeo.
 
         La tupla tiene la estructura (width, height, fps, num_frames).
 
         :return: propiedades del vídeo.
         """
-        return VideoPropierties(self.width, self.height, self.fps, self.num_frames)
+        return VideoProperties(self.width, self.height, self.fps, self.num_frames)
 
 
 class StreamSequenceWriter:
     """Clase para la escritura de una secuencia de imágenes en un archivo de vídeo.
     """
-    def __init__(self, file_output: str, propierties: VideoPropierties):
+    def __init__(self, file_output: str, propierties: VideoProperties):
         fourcc = cv2.VideoWriter_fourcc(*'DIVX')
-        fps, width, height, _ = propierties
+        width, height, fps, _ = propierties
         self._stream = cv2.VideoWriter(file_output, fourcc, fps, (width, height))
 
     def __del__(self):
@@ -242,6 +245,10 @@ class StreamSequenceWriter:
         :param frame: imagen para escribir.
         :return: None.
         """
+        # Convertir la imagen a BGR porque cv2 trabaja con ese espacio de colores.
+        frame = cv2.cvtColor(frame, cv2.COLOR_RGB2BGR)
+        # Escribir el frame.
+        self._stream.write(frame)
 
     def release(self) -> None:
         """Cierra la conexión con el archivo.
@@ -251,19 +258,19 @@ class StreamSequenceWriter:
     @staticmethod
     def save_sequence(sequence: StreamSequence,
                       file_output: str,
-                      propierties: VideoPropierties = None) -> None:
+                      properties: VideoProperties = None) -> None:
         """Guarda una secuencia de vídeo frame a frame en un archivo.
 
         :param sequence: secuencia de vídeo.
         :param file_output: archivo de salida.
-        :param propierties: propiedades del vídeo de salida. Si es None se obtienen de la secuencia
+        :param properties: propiedades del vídeo de salida. Si es None se obtienen de la secuencia
         de entrada.
         :return: None.
         """
-        # Abrir el stream.
-        output_stream = StreamSequenceWriter(file_output)
         # Si no se pasaron propiedades, obtenerlas de la secuencia
-        propierties = sequence.properties()
+        properties = sequence.properties()
+        # Abrir el stream.
+        output_stream = StreamSequenceWriter(file_output, properties)
         # Guardar todos los frames de la secuencia.
         for frame in sequence:
             output_stream.write(frame)

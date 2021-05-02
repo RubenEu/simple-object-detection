@@ -27,7 +27,7 @@ class RelativeBoundingBox(NamedTuple):
     height: int
 
 
-class VideoPropierties(NamedTuple):
+class VideoProperties(NamedTuple):
     width: int
     height: int
     fps: float
