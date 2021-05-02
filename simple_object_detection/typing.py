@@ -12,6 +12,12 @@ class Point2D(NamedTuple):
     y: int
 
 
+class FloatVector2D(NamedTuple):
+    """Representa un vector en 2D de tipo float."""
+    x: float
+    y: float
+
+
 class BoundingBox(NamedTuple):
     """Representa una caja delimitadora."""
     top_left: Point2D
