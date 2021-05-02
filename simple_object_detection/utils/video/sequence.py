@@ -261,6 +261,11 @@ class StreamSequenceWriter:
                       properties: VideoProperties = None) -> None:
         """Guarda una secuencia de vídeo frame a frame en un archivo.
 
+        En esencia, lo que hace es copiar lo que entra por un stream de entrada y guardarlo en un
+        archivo a través de un stream de salida.
+
+        Este método tiene propósito de depuración y comprobación.
+
         :param sequence: secuencia de vídeo.
         :param file_output: archivo de salida.
         :param properties: propiedades del vídeo de salida. Si es None se obtienen de la secuencia
