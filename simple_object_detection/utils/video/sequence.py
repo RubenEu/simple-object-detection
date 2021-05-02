@@ -39,7 +39,13 @@ class StreamSequence:
         del self.stream
 
     def __getitem__(self, item: int) -> Image:
-        """
+        """Obtiene el frame item-ésimo.
+
+        Si se ha establecido un frame inicial o final distinto con los métodos ``set_start_frame``
+        o ``set_end_frame``, el frame 0 será el del límite inferior y el frame último el del límite
+        superior, actuando como si el stream de vídeo introducido estuviese acotado por ellos y no
+        por los originales.
+
         TODO: Cachear. Cargar chunk. Etc. Etc. Mostrar rendimiento haciendo caching.
         https://medium.com/fintechexplained/advanced-python-how-to-implement-caching-in-python-application-9d0a4136b845
         TODO: Añadir slicing:
