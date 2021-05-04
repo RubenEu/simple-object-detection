@@ -3,6 +3,8 @@ import pickle
 
 from typing import List, Any
 
+from tqdm import tqdm
+
 from simple_object_detection.typing import Image
 from simple_object_detection.object import Object
 from simple_object_detection.utils.video import StreamSequence
@@ -20,10 +22,12 @@ def generate_objects_detections(network: Any,
     """
     objects_per_frame = list()
     # Recorrer los frames.
-    for frame_id, frame in enumerate(sequence):
-        # Calcular y extraer los objetos e insertarlos en la lista.
-        objects = network.get_objects(frame, mask=mask)
-        objects_per_frame.insert(frame_id, objects)
+    with tqdm(total=len(sequence)) as t:
+        for frame_id, frame in enumerate(sequence):
+            # Calcular y extraer los objetos e insertarlos en la lista.
+            objects = network.get_objects(frame, mask=mask)
+            objects_per_frame.insert(frame_id, objects)
+            t.update()
     return objects_per_frame
 
 
