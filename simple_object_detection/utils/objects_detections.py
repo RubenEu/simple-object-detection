@@ -22,7 +22,7 @@ def generate_objects_detections(network: Any,
     """
     objects_per_frame = list()
     # Recorrer los frames.
-    t = tqdm(total=len(sequence))
+    t = tqdm(total=len(sequence), desc='Generating objects detections')
     for frame_id, frame in enumerate(sequence):
         # Calcular y extraer los objetos e insertarlos en la lista.
         objects = network.get_objects(frame, mask=mask)
