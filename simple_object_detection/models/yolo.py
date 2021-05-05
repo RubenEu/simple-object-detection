@@ -51,3 +51,51 @@ class YOLOv5x(PyTorchHubModel):
 
     def _get_output(self, image: Image) -> Any:
         return self.model([image], size=640)
+
+
+class YOLOv5s6(PyTorchHubModel):
+
+    def _load_local(self) -> Any:
+        raise NotImplementedError('YOLOv5s is not implemented for use with local files.')
+
+    def _load_online(self) -> Any:
+        return torch.hub.load('ultralytics/yolov5', 'yolov5s6')
+
+    def _get_output(self, image: Image) -> Any:
+        return self.model([image], size=1280)
+
+
+class YOLOv5m6(PyTorchHubModel):
+
+    def _load_local(self) -> Any:
+        raise NotImplementedError('YOLOv5s is not implemented for use with local files.')
+
+    def _load_online(self) -> Any:
+        return torch.hub.load('ultralytics/yolov5', 'yolov5m6')
+
+    def _get_output(self, image: Image) -> Any:
+        return self.model([image], size=1280)
+
+
+class YOLOv5l6(PyTorchHubModel):
+
+    def _load_local(self) -> Any:
+        raise NotImplementedError('YOLOv5s is not implemented for use with local files.')
+
+    def _load_online(self) -> Any:
+        return torch.hub.load('ultralytics/yolov5', 'yolov5l6')
+
+    def _get_output(self, image: Image) -> Any:
+        return self.model([image], size=1280)
+
+
+class YOLOv5x6(PyTorchHubModel):
+
+    def _load_local(self) -> Any:
+        raise NotImplementedError('YOLOv5s is not implemented for use with local files.')
+
+    def _load_online(self) -> Any:
+        return torch.hub.load('ultralytics/yolov5', 'yolov5x6')
+
+    def _get_output(self, image: Image) -> Any:
+        return self.model([image], size=1280)
