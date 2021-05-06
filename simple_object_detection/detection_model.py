@@ -54,10 +54,10 @@ class DetectionModel(ABC):
             images = [cv2.bitwise_and(image, mask) for image in images]
         # Extrae la salida de la red neuronal.
         outputs = self._get_outputs(images)
-        # Extrae la lista de objetos de ese frame y los devuelve.
+        # Extrae la lista de objetos de esa imagen y los devuelve.
         return [self._get_objects(output, image) for image, output in zip(images, outputs)]
 
-    def get_frame_objects(self, image: Image, mask: Image = None) -> List[Object]:
+    def get_image_objects(self, image: Image, mask: Image = None) -> List[Object]:
         """Devuelve todos los objetos que se extraen de la salida de la predicción de la red
         neuronal.
 
