@@ -5,6 +5,7 @@ from simple_object_detection.utils.objects_detections import (generate_objects_d
                                                               load_objects_detections,
                                                               filter_objects_by_classes,
                                                               filter_objects_by_min_score,
-                                                              filter_objects_avoiding_duplicated)
+                                                              filter_objects_avoiding_duplicated,
+                                                              filter_objects_inside_mask_region)
 
 

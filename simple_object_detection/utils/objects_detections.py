@@ -58,6 +58,13 @@ def load_objects_detections(file_path: str, encoding: str = 'ASCII') -> List[Obj
 
 
 def filter_objects_by_classes(objects: List[Object], classes: List[str]) -> List[Object]:
+    """Filtrar los objetos cuya etiqueta está entre las clases especificadas en el parámetro
+    ``classes``.
+
+    :param objects: lista de objetos.
+    :param classes: lista de nombres de las clases.
+    :return: lista de objetos filtrados.
+    """
     # Preprocesar las clases para ponerlas todas en minúscula.
     classes = [class_name.lower() for class_name in classes]
     # Devolver la lista de los objetos etiquetados con esas clases.
@@ -65,11 +72,30 @@ def filter_objects_by_classes(objects: List[Object], classes: List[str]) -> List
 
 
 def filter_objects_by_min_score(objects: List[Object], min_score: float) -> List[Object]:
+    """Filtrar objetos por puntuación mayor que la indicada por el parámetro ``min_score``
+
+    :param objects: lista de objetos.
+    :param min_score: puntuación mínima (incluída) que deben tener los objetos.
+    :return: lista de objetos filtrados.
+    """
     return list(filter(lambda obj: obj.score >= min_score, objects))
 
 
 def filter_objects_avoiding_duplicated(objects: List[Object],
                                        max_distance: int = 20) -> List[Object]:
+    """Filtra los objetos evitando aquellas posibles que sean detecciones múltiples.
+
+    El fundamento del algoritmo es que si se detectan dos objetos con un centroide muy cercano, a
+    una distancia máxima indicada por ``max_distance``, entonces es una detección múltiple.
+
+    El conflicto se resuelve eliminando las detecciones múltiple y escogiendo la que mejor
+    puntuación ha obtenido en la detección.
+
+    :param objects: lista de objetos.
+    :param max_distance: máxima distancia entre centros para considerar que ese objeto puede ser
+    un duplicado.
+    :return: lista de objetos filtrados.
+    """
     # Lista de las posiciones en 'objects' de los objetos eliminados.
     removed_objects_id = list()
     # Buscar los posibles candidatos para cada objeto.
@@ -98,3 +124,15 @@ def filter_objects_avoiding_duplicated(objects: List[Object],
         if obj_id not in removed_objects_id:
             objects_filtered.append(obj_detection)
     return objects_filtered
+
+
+def filter_objects_inside_mask_region(objects: List[Object], mask: Image) -> List[Object]:
+    """Filtra los objetos que están dentro de una máscara.
+
+    Se toma como punto de referencia del objeto su centroide.
+
+    :param objects: lista de objetos.
+    :param mask: máscara con la región dónde se filtrarán los vehículos.
+    :return: lista de objetos filtrados.
+    """
+    return [object_ for object_ in objects if mask[object_.center[1], object_.center[0]].all()]
