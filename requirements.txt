@@ -1,7 +1,5 @@
 numpy
 requests
-tensorflow
-tensorflow-hub
 opencv-python
 torch
 torchvision

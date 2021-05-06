@@ -10,8 +10,6 @@ setup(
     install_requires=[
         'numpy',
         'requests',
-        'tensorflow',
-        'tensorflow-hub',
         'opencv-python',
         'torch',
         'torchvision',

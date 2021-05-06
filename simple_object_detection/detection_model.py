@@ -2,7 +2,6 @@ import tempfile
 from abc import ABC, abstractmethod
 from typing import AnyStr, List, Any
 
-import tensorflow as tf
 import cv2
 
 from simple_object_detection.object import Object
@@ -192,48 +191,3 @@ class PyTorchHubModel(DetectionModel, ABC):
     def _calculate_label(self, output: Any, obj_id: int, *args, **kwargs) -> str:
         class_id = int(output.xywh[0][obj_id][5])
         return COCO_NAMES[class_id]
-
-
-class TFHubModel(DetectionModel, ABC):
-    """Clase abstracta común para los modelos extraídos de tensorflow hub.
-
-    Los modelos para las redes implementadas con esta clase se pueden encontrar en:
-        - https://tfhub.dev/s?module-type=image-object-detection
-        - https://tfhub.dev/tensorflow/collections/object_detection/1
-
-    Uso local: para su correcto funcionamiento tendrá que descomprimirse el archivo .tar.gz en
-    una carpeta con el mismo nombre que el archivo (como convención).
-    """
-
-    @staticmethod
-    def _preprocess_image(image: Image) -> Image:
-        """Preprocesa la imagen para ser introducida en la red.
-
-        :param image: imagen.
-        :return: imagen preprocesada.
-        """
-        return tf.image.convert_image_dtype(image, tf.float32)[tf.newaxis, ...]
-
-    def _get_output(self, image):
-        input_pattern = self._preprocess_image(image)
-        output = self.model(input_pattern)
-        return output
-
-    def _calculate_number_detections(self, output: Any, *args, **kwargs) -> int:
-        return output['detection_boxes'].shape[0]
-
-    def _calculate_object_position(self, output: Any,
-                                   obj_id: int, *args, **kwargs) -> RelativeBoundingBox:
-        im_height, im_width = kwargs['image'].shape[0:2]
-        ymin, xmin, ymax, xmax = output['detection_boxes'][obj_id].numpy()
-        (left, right, top, bottom) = (xmin * im_width, xmax * im_width, ymin * im_height,
-                                      ymax * im_height)
-        center = int(left + (right - left) / 2), int(top + (bottom - top) / 2)
-        width, height = int(right - left), int(bottom - top)
-        return RelativeBoundingBox(Point2D(center[0], center[1]), width, height)
-
-    def _calculate_score(self, output: Any, obj_id: int, *args, **kwargs) -> float:
-        return float(output['detection_scores'][obj_id])
-
-    def _calculate_label(self, output: Any, obj_id: int, *args, **kwargs) -> str:
-        return output['detection_class_entities'][obj_id].numpy().decode()
