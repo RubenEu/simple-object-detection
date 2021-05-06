@@ -31,16 +31,19 @@ def generate_objects_detections(network: Any,
     return objects_per_frame
 
 
-def save_objects_detections(objects_detections: List[List[Object]], file_output: str) -> None:
+def save_objects_detections(objects_detections: List[List[Object]],
+                            file_output: str,
+                            pickle_version: int = pickle.DEFAULT_PROTOCOL) -> None:
     """Guarda las detecciones de objetos en una secuencia.
 
     Si el archivo existe, lo sobreescribe.
 
     :param objects_detections: red utilizada para la detección de objetos.
     :param file_output: archivo donde se guardará la lista de detecciones en cada frame.
+    :param pickle_version: versión del protocolo de pickle.
     """
     with open(file_output, 'wb') as output:
-        pickle.dump(objects_detections, output, pickle.HIGHEST_PROTOCOL)
+        pickle.dump(objects_detections, output, pickle_version)
 
 
 def load_objects_detections(file_path: str, encoding: str = 'ASCII') -> List[Object]:
