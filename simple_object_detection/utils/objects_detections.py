@@ -1,34 +1,40 @@
+from math import ceil
+
 import numpy as np
 import pickle
 
 from typing import List, Any
-
 from tqdm import tqdm
 
+from simple_object_detection.detection_model import DetectionModel
 from simple_object_detection.typing import Image
 from simple_object_detection.object import Object
 from simple_object_detection.utils.video import StreamSequence
 
 
-def generate_objects_detections(network: Any,
+def generate_objects_detections(network: DetectionModel,
                                 sequence: StreamSequence,
+                                batch_size: int = 1,
                                 mask: Image = None) -> List[List[Object]]:
     """Genera las detecciones de objetos en cada frame de una secuencia de vídeo.
 
     :param network: red utilizada para la detección de objetos.
     :param sequence: video donde extraer los frames.
+    :param batch_size: tamaño de frames que se mandan procesar al modelo de detección.
     :param mask: máscara para aplicar la zona donde se realizará la detección en la secuencia.
     :return: lista con las detecciones por indexada por frame.
     """
-    objects_per_frame = list()
-    # Recorrer los frames.
-    t = tqdm(total=len(sequence), desc='Generating objects detections')
-    for frame_id, frame in enumerate(sequence):
-        # Calcular y extraer los objetos e insertarlos en la lista.
-        objects = network.get_objects(frame, mask=mask)
-        objects_per_frame.insert(frame_id, objects)
+    frames_objects = []
+    iterations = ceil(len(sequence) / batch_size)
+    t = tqdm(total=iterations, desc='Generating objects detections')
+    for iteration in range(iterations):
+        start = iteration * batch_size
+        stop = start + batch_size
+        frames = [sequence[frame_id] for frame_id in range(start, stop) if frame_id < len(sequence)]
+        # frames = sequence[start:stop]  TODO: necesita implementar el slicing en sequence!
+        frames_objects += network.get_images_objects(frames, mask)
         t.update()
-    return objects_per_frame
+    return frames_objects
 
 
 def save_objects_detections(objects_detections: List[List[Object]],
