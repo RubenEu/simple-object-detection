@@ -10,7 +10,8 @@ with open('README.rst') as readme_file:
 with open('HISTORY.rst') as history_file:
     history = history_file.read()
 
-requirements = ['Click>=7.0', 'numpy', 'opencv-python', 'torch', 'torchvision', 'tqdm']
+requirements = ['Click>=7.0', 'numpy', 'opencv-python', 'torch', 'torchvision', 'tqdm',
+                'matplotlib', 'pandas', 'seaborn', 'tensorboard']
 
 setup_requirements = ['pytest-runner', ]
 
