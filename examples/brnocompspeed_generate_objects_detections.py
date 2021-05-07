@@ -11,10 +11,10 @@ logger = logging.getLogger(__name__)
 session_folder = os.path.dirname(os.getenv('BRNOCOMPSPEED_FOLDER'))
 
 sessions = [
-    ('session2_center', os.path.join(session_folder, 'session2_center')),
     ('session1_center', os.path.join(session_folder, 'session1_center')),
     ('session1_left', os.path.join(session_folder, 'session1_left')),
     ('session1_right', os.path.join(session_folder, 'session1_right')),
+    ('session2_center', os.path.join(session_folder, 'session2_center')),
 ]
 networks = [
     YOLOv5s,
