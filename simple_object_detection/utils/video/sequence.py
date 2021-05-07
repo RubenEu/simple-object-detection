@@ -36,7 +36,8 @@ class StreamSequence:
     def __del__(self) -> None:
         """Libera el recurso del vídeo cargado y elimina el objeto también.
         """
-        self.stream.release()
+        if self.stream is not None and self.stream.isOpened():
+            self.stream.release()
         del self.stream
 
     def __getitem__(self, item: int) -> Image:
@@ -276,7 +277,8 @@ class StreamSequenceWriter:
     def release(self) -> None:
         """Cierra la conexión con el archivo.
         """
-        self._stream.release()
+        if self._stream is not None and self._stream.isOpened():
+            self._stream.release()
 
     @staticmethod
     def save_sequence(sequence: StreamSequence,
