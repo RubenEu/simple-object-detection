@@ -8,13 +8,14 @@ from simple_object_detection.utils.video import StreamSequence
 logging.basicConfig(format='%(levelname)s:%(message)s', level=logging.DEBUG)
 logger = logging.getLogger(__name__)
 
-session_folder = os.path.dirname(os.getenv('BRNOCOMPSPEED_FOLDER'))
+session_folder = os.path.abspath(os.getenv('BRNOCOMPSPEED_FOLDER'))
 
 sessions = [
     ('session1_center', os.path.join(session_folder, 'session1_center')),
     ('session1_left', os.path.join(session_folder, 'session1_left')),
     ('session1_right', os.path.join(session_folder, 'session1_right')),
     ('session2_center', os.path.join(session_folder, 'session2_center')),
+    ('session4_center', os.path.join(session_folder, 'session2_center')),
 ]
 networks = [
     YOLOv5s,
