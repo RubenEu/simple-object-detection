@@ -1,9 +1,9 @@
 import numpy as np
 
-from typing import Union, Tuple, NamedTuple
+from typing import NamedTuple, NewType
 
 
-Image = Union[Tuple[np.uint8, np.uint8, np.uint8], np.ndarray]
+Image = NewType('Image', np.ndarray)
 
 
 class Point2D(NamedTuple):
