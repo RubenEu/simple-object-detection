@@ -17,12 +17,24 @@ batch_size = int(os.getenv('BATCH_SIZE', 100))
 sessions = [
     ('session1_center', os.path.join(session_folder, 'session1_center')),
     ('session1_left', os.path.join(session_folder, 'session1_left')),
+    ('session1_right', os.path.join(session_folder, 'session1_right')),
     ('session2_center', os.path.join(session_folder, 'session2_center')),
+    ('session2_left', os.path.join(session_folder, 'session2_left')),
+    ('session2_right', os.path.join(session_folder, 'session2_right')),
+    ('session3_center', os.path.join(session_folder, 'session3_center')),
+    ('session3_left', os.path.join(session_folder, 'session3_left')),
+    ('session3_right', os.path.join(session_folder, 'session3_right')),
     ('session4_center', os.path.join(session_folder, 'session4_center')),
+    ('session4_left', os.path.join(session_folder, 'session4_left')),
+    ('session4_right', os.path.join(session_folder, 'session4_right')),
     ('session5_center', os.path.join(session_folder, 'session5_center')),
+    ('session5_left', os.path.join(session_folder, 'session5_left')),
+    ('session5_right', os.path.join(session_folder, 'session5_right')),
     ('session6_center', os.path.join(session_folder, 'session6_center')),
+    ('session6_left', os.path.join(session_folder, 'session6_left')),
+    ('session6_right', os.path.join(session_folder, 'session6_right')),
 ]
-networks = [YOLOv5s, YOLOv5m, YOLOv5l, YOLOv5x, ]
+networks = [YOLOv5s, YOLOv5m, YOLOv5l, YOLOv5x,]
 
 for network_cls in networks:
     # Initialize network
