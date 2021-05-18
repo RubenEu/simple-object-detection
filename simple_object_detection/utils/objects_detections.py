@@ -15,18 +15,20 @@ from simple_object_detection.utils.video import StreamSequence
 def generate_objects_detections(network: DetectionModel,
                                 sequence: StreamSequence,
                                 batch_size: int = 1,
-                                mask: Image = None) -> List[List[Object]]:
+                                mask: Image = None,
+                                verbose: bool = False) -> List[List[Object]]:
     """Genera las detecciones de objetos en cada frame de una secuencia de vídeo.
 
     :param network: red utilizada para la detección de objetos.
     :param sequence: video donde extraer los frames.
     :param batch_size: tamaño de frames que se mandan procesar al modelo de detección.
     :param mask: máscara para aplicar la zona donde se realizará la detección en la secuencia.
+    :param verbose: indica si se quiere mostrar la barra de progreso o no.
     :return: lista con las detecciones por indexada por frame.
     """
     frames_objects = []
     iterations = ceil(len(sequence) / batch_size)
-    t = tqdm(total=iterations, desc='Generating objects detections')
+    t = tqdm(total=iterations, desc='Generating objects detections', disable=not verbose)
     for iteration in range(iterations):
         start = iteration * batch_size
         stop = start + batch_size
