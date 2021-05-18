@@ -51,6 +51,7 @@ for network_cls in networks:
         logger.info(f'Cargando el video {video_file} con un tamaño de buffer de {cache_size}')
         sequence = StreamSequence(video_file, cache_size=cache_size)
         logger.info(f'Generando detecciones en lotes de tamaño {batch_size}')
-        objects_detections = generate_objects_detections(network, sequence, batch_size=batch_size)
+        objects_detections = generate_objects_detections(network, sequence, batch_size=batch_size,
+                                                         verbose=True)
         save_objects_detections(objects_detections, output_file, pickle_version=4)
         logger.info('Detección de objetos terminada.')
