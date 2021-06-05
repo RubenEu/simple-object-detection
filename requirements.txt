@@ -109,7 +109,7 @@ tqdm==4.60.0
     # via simple-object-detection (setup.py)
 typing-extensions==3.10.0.0
     # via torch
-urllib3==1.26.4
+urllib3==1.26.5
     # via requests
 werkzeug==1.0.1
     # via tensorboard
