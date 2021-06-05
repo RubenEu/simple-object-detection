@@ -15,9 +15,7 @@ Simple Object Detection
 
 
 
-
-Conjunto de herramientas y modelos para la detección de objetos.
-
+Toolkit and models for object detection.
 
 * Free software: MIT license
 * Documentation: https://simple-object-detection.readthedocs.io.
@@ -26,7 +24,14 @@ Conjunto de herramientas y modelos para la detección de objetos.
 Features
 --------
 
-* TODO
+* Wrapper for object detections neural networks.
+* Class for store object information (center, bounding box, width, height, score, label, ...)
+* Abstract class for PyTorcuh hub models easy implementation.
+* Implemented neuronal networks: YOLOv5 with PyTorch.
+* Image tools to draw bounding boxes on it.
+* Video tools to load and easily generate detections.
+* File geneneration with objects detections.
+* Objects filters based on its label, score, region, etc.
 
 Credits
 -------
