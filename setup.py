@@ -48,6 +48,6 @@ setup(
     test_suite='tests',
     tests_require=test_requirements,
     url='https://github.com/rubeneu/simple_object_detection',
-    version='1.1.0',
+    version='1.3.0',
     zip_safe=False,
 )
